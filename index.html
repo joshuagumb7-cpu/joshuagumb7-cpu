@@ -1,0 +1,1321 @@
+<!DOCTYPE html>
+<html lang="en" class="dark h-full bg-slate-950 text-slate-100">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Josh & Jett 3D Printing | Shop & Owner Portal</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['Fira Code', 'monospace']
+          },
+          colors: {
+            brand: {
+              50: '#ecfeff',
+              100: '#cffaff',
+              400: '#22d3ee',
+              500: '#06b6d4',
+              600: '#0891b2',
+              900: '#164e63',
+              950: '#083344'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Font: Inter & FontAwesome Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: radial-gradient(circle at 50% 0%, #0f172a 0%, #020617 100%);
+      min-height: 100vh;
+    }
+    
+    .glass-panel {
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .glass-card {
+      background: rgba(30, 41, 59, 0.6);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .glass-card:hover {
+      border-color: rgba(34, 211, 238, 0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px -10px rgba(6, 182, 212, 0.15);
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #020617;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #0891b2;
+    }
+
+    input[type=range] {
+      accent-color: #06b6d4;
+    }
+  </style>
+</head>
+
+<body class="flex flex-col min-h-screen text-slate-100 antialiased selection:bg-cyan-500 selection:text-slate-950">
+
+  <!-- Top Navigation Header -->
+  <header class="sticky top-0 z-40 border-b border-slate-800/80 glass-panel">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16 sm:h-20">
+        <!-- Brand Logo -->
+        <div class="flex items-center space-x-3 cursor-pointer" onclick="navigateTo('shop')">
+          <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-tr from-cyan-500 to-indigo-600 p-0.5 shadow-lg shadow-cyan-500/20 flex items-center justify-center">
+            <div class="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center">
+              <i class="fa-solid fa-cube text-cyan-400 text-lg sm:text-xl"></i>
+            </div>
+          </div>
+          <div>
+            <h1 class="text-base sm:text-lg font-black tracking-tight text-white flex items-center gap-2">
+              Josh & Jett <span class="text-cyan-400 font-extrabold text-xs uppercase tracking-widest px-2 py-0.5 rounded-full bg-cyan-950/80 border border-cyan-500/30">3D Prints</span>
+            </h1>
+            <p class="text-[11px] text-slate-400 hidden sm:block font-mono">Precision Models & Custom Filament Shop</p>
+          </div>
+        </div>
+
+        <!-- Header Actions & Navigation -->
+        <div class="flex items-center space-x-1.5 sm:space-x-3">
+          <button onclick="navigateTo('shop')" class="px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800/60 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-store text-cyan-400"></i> <span class="hidden xs:inline">Shop</span>
+          </button>
+          <button onclick="openQuickTrackModal()" class="px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800/60 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-magnifying-glass text-indigo-400"></i> <span>Track</span>
+          </button>
+          <button onclick="openOwnerPinModal()" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-amber-300 hover:text-amber-200 hover:bg-amber-950/40 border border-amber-500/30 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-key text-amber-400"></i> <span>Owner Portal</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none max-w-sm w-full"></div>
+
+  <!-- Main Application Body Views -->
+  <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+
+    <!-- VIEW 1: SHOP FRONT (Catalog View) -->
+    <section id="view-shop" class="space-y-6">
+      <!-- Hero Banner with Disclaimer Note -->
+      <div class="relative overflow-hidden rounded-3xl glass-panel p-6 sm:p-10 border border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="relative z-10 max-w-2xl space-y-3">
+          <span class="text-xs font-mono font-bold text-cyan-400 uppercase tracking-widest bg-cyan-500/10 px-3 py-1 rounded-full border border-cyan-500/20 inline-block">
+            High Quality Filament Prints & Custom Models
+          </span>
+          <h2 class="text-2xl sm:text-4xl font-black text-white tracking-tight">
+            Bring Digital Designs into <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-indigo-400">Physical Reality</span>
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-400 leading-relaxed">
+            Select your favorite 3D models, customize scales and custom filament colors with live price estimations, and track production status.
+          </p>
+        </div>
+
+        <!-- Electronics Disclaimer Note Card -->
+        <div class="relative z-10 glass-card p-4 sm:p-5 rounded-2xl border border-amber-500/30 bg-amber-950/20 max-w-xs space-y-1.5">
+          <div class="flex items-center gap-2 text-amber-400 font-bold text-xs uppercase font-mono">
+            <i class="fa-solid fa-triangle-exclamation"></i> Important Notice
+          </div>
+          <p class="text-[11px] text-slate-300 font-mono leading-relaxed">
+            Note that there will be no electronics involved. There will just be plastic and physical toys and stuff.
+          </p>
+        </div>
+      </div>
+
+      <!-- Search & Category Filters -->
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div id="category-pills-container" class="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-2 sm:pb-0 no-scrollbar">
+          <!-- Dynamic Category Pills Rendered Here -->
+        </div>
+
+        <div class="relative w-full sm:w-64">
+          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+          <input type="text" id="shop-search-input" oninput="renderShopGrid()" placeholder="Search 3D models..." class="w-full bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition" />
+        </div>
+      </div>
+
+      <!-- Product Cards Grid (No Images) -->
+      <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <!-- Products populated via JS -->
+      </div>
+    </section>
+
+    <!-- VIEW 2: LIVE ORDER TRACKING (Read-Only Customer Page) -->
+    <section id="view-tracking" class="hidden space-y-6">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+        <div>
+          <button onclick="navigateTo('shop')" class="text-xs text-slate-400 hover:text-cyan-400 transition flex items-center gap-1 font-mono mb-1">
+            &larr; Back to Shop
+          </button>
+          <h2 class="text-xl sm:text-2xl font-black text-white flex items-center gap-2">
+            <i class="fa-solid fa-truck-fast text-cyan-400"></i> Live Order Tracker
+          </h2>
+        </div>
+        <button onclick="copyTrackingNumber()" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-mono text-cyan-300 border border-slate-700 transition flex items-center gap-1.5 shadow-sm">
+          <i class="fa-solid fa-copy"></i> Copy Code
+        </button>
+      </div>
+
+      <!-- Tracking Header Details Card -->
+      <div class="glass-panel rounded-3xl p-6 border border-slate-800 space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 pb-6 border-b border-slate-800">
+          <div>
+            <span class="text-[11px] font-mono text-slate-500 block uppercase">Tracking Number</span>
+            <span id="track-number-display" class="text-lg font-mono font-black text-cyan-400">8A-----------</span>
+          </div>
+          <div>
+            <span class="text-[11px] font-mono text-slate-500 block uppercase">Product Item</span>
+            <span id="track-item-title" class="text-sm font-bold text-white">---</span>
+          </div>
+          <div>
+            <span class="text-[11px] font-mono text-slate-500 block uppercase">Specifications</span>
+            <span id="track-item-specs" class="text-xs font-mono text-cyan-300">---</span>
+          </div>
+          <div>
+            <span class="text-[11px] font-mono text-slate-500 block uppercase">Assigned Machine</span>
+            <span id="assigned-printer-name" class="text-xs font-mono text-emerald-400">---</span>
+          </div>
+        </div>
+
+        <!-- Read-Only Progress Timeline -->
+        <div class="space-y-6 pt-2">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xs font-mono uppercase tracking-wider text-slate-400">Production & Delivery Status</h3>
+            <span id="current-status-title" class="text-sm font-bold text-cyan-400">Order Received</span>
+          </div>
+
+          <!-- Progress Bar & Stage Nodes -->
+          <div class="relative py-4">
+            <div class="absolute top-1/2 left-0 right-0 h-1.5 bg-slate-800 -translate-y-1/2 rounded-full"></div>
+            <div id="progress-bar-fill" class="absolute top-1/2 left-0 h-1.5 bg-cyan-500 -translate-y-1/2 rounded-full transition-all duration-500" style="width: 0%"></div>
+
+            <div class="relative flex justify-between">
+              <div class="flex flex-col items-center gap-2">
+                <div id="node-blob-0" class="w-10 h-10 rounded-xl bg-slate-900 border-2 border-slate-700 flex items-center justify-center text-slate-500 text-xs font-bold transition-all">1</div>
+                <span class="text-[10px] font-mono text-slate-400 text-center">Received</span>
+              </div>
+              <div class="flex flex-col items-center gap-2">
+                <div id="node-blob-1" class="w-10 h-10 rounded-xl bg-slate-900 border-2 border-slate-700 flex items-center justify-center text-slate-500 text-xs font-bold transition-all">2</div>
+                <span class="text-[10px] font-mono text-slate-400 text-center">Printing</span>
+              </div>
+              <div class="flex flex-col items-center gap-2">
+                <div id="node-blob-2" class="w-10 h-10 rounded-xl bg-slate-900 border-2 border-slate-700 flex items-center justify-center text-slate-500 text-xs font-bold transition-all">3</div>
+                <span class="text-[10px] font-mono text-slate-400 text-center">Packaged</span>
+              </div>
+              <div class="flex flex-col items-center gap-2">
+                <div id="node-blob-3" class="w-10 h-10 rounded-xl bg-slate-900 border-2 border-slate-700 flex items-center justify-center text-slate-500 text-xs font-bold transition-all">4</div>
+                <span class="text-[10px] font-mono text-slate-400 text-center">Delivered</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Audit Logs Feed -->
+        <div class="pt-4 border-t border-slate-800">
+          <h4 class="text-xs font-mono text-slate-400 uppercase tracking-wider mb-3">Live Log History</h4>
+          <ul id="audit-log-list" class="space-y-2 text-xs font-mono text-slate-300 bg-slate-950/60 p-4 rounded-2xl border border-slate-800 max-h-40 overflow-y-auto">
+            <li>▶ Order initialization complete.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 3: OWNER PORTAL (Protected Dedicated Page View) -->
+    <section id="view-owner" class="hidden space-y-8">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+        <div>
+          <span class="text-xs font-mono text-amber-400 uppercase tracking-widest bg-amber-500/10 px-3 py-0.5 rounded-full border border-amber-500/20 inline-block mb-1">
+            Shop Owner Control Center
+          </span>
+          <h2 class="text-2xl font-black text-white flex items-center gap-2">
+            <i class="fa-solid fa-sliders text-amber-400"></i> Owner Portal Page
+          </h2>
+        </div>
+        <button onclick="exitOwnerPortal()" class="self-start sm:self-center px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-mono text-slate-300 border border-slate-700 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i> Exit Portal & Lock
+        </button>
+      </div>
+
+      <!-- Dashboard Summary Stats -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="glass-panel p-4 rounded-2xl border border-slate-800">
+          <span class="text-[10px] font-mono text-slate-500 uppercase">Total Orders</span>
+          <p id="owner-stat-total" class="text-2xl font-black text-white mt-1">0</p>
+        </div>
+        <div class="glass-panel p-4 rounded-2xl border border-slate-800">
+          <span class="text-[10px] font-mono text-amber-400 uppercase">Active Production</span>
+          <p id="owner-stat-active" class="text-2xl font-black text-amber-400 mt-1">0</p>
+        </div>
+        <div class="glass-panel p-4 rounded-2xl border border-slate-800">
+          <span class="text-[10px] font-mono text-emerald-400 uppercase">Completed</span>
+          <p id="owner-stat-completed" class="text-2xl font-black text-emerald-400 mt-1">0</p>
+        </div>
+      </div>
+
+      <!-- Filament Inventory Management Section -->
+      <div class="glass-panel rounded-3xl p-6 border border-slate-800 space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+          <div>
+            <h3 class="text-lg font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-palette text-amber-400"></i> Filament Inventory & Stock Control
+            </h3>
+            <p class="text-xs text-slate-400">Add, edit, or remove filament materials with color wheel picker</p>
+          </div>
+          <button onclick="openAddFilamentModal()" class="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition flex items-center gap-1.5 shadow-md">
+            <i class="fa-solid fa-plus"></i> Add New Filament
+          </button>
+        </div>
+
+        <div id="owner-filaments-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          <!-- Filament Stock Toggles rendered here -->
+        </div>
+      </div>
+
+      <!-- Catalog Model Management Section (Full CRUD) -->
+      <div class="glass-panel rounded-3xl p-6 border border-slate-800 space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+          <div>
+            <h3 class="text-lg font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-boxes-stacked text-cyan-400"></i> Catalog Model Management
+            </h3>
+            <p class="text-xs text-slate-400">Add and fully edit your 3D print models, tags, and icon symbols</p>
+          </div>
+          <button onclick="openAddModelModal()" class="px-3.5 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs transition flex items-center gap-1.5 shadow-md">
+            <i class="fa-solid fa-plus"></i> Add New Model
+          </button>
+        </div>
+
+        <div id="owner-catalog-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Catalog items rendered here -->
+        </div>
+      </div>
+
+      <!-- Customer Orders Management Section -->
+      <div class="glass-panel rounded-3xl p-6 border border-slate-800 space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+          <div>
+            <h3 class="text-lg font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-list-check text-indigo-400"></i> Customer Orders & Production Pipeline
+            </h3>
+            <p class="text-xs text-slate-400">Advance production stages or delete orders</p>
+          </div>
+          <div class="relative w-full sm:w-64">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+            <input type="text" id="owner-search-input" oninput="renderOwnerPortalOrders()" placeholder="Search orders..." class="w-full bg-slate-900 border border-slate-800 rounded-xl pl-8 pr-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition" />
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs font-mono">
+            <thead class="bg-slate-950/80 text-slate-400 uppercase tracking-wider border-b border-slate-800">
+              <tr>
+                <th class="p-3">Tracking / Code</th>
+                <th class="p-3">Customer</th>
+                <th class="p-3">Model Item</th>
+                <th class="p-3">Specs</th>
+                <th class="p-3">Stage</th>
+                <th class="p-3 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="owner-orders-table-body" class="divide-y divide-slate-800/60">
+              <!-- Dynamic orders list populated via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-800/80 bg-slate-950/80 py-8 mt-12 text-center text-xs text-slate-500 font-mono">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <p>&copy; 2026 Josh & Jett 3D Printing Lab. All rights reserved. (No Electronics Involved)</p>
+      <div class="flex items-center space-x-4">
+        <button onclick="openQuickTrackModal()" class="hover:text-cyan-400 transition">Track Order</button>
+        <button onclick="openOwnerPinModal()" class="hover:text-amber-400 transition">Owner Login</button>
+      </div>
+    </div>
+  </footer>
+
+  <!-- MODALS CONTAINER -->
+
+  <!-- 1. Owner PIN Security Modal (Hidden PIN digits) -->
+  <div id="modal-owner-pin" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md hidden p-4">
+    <div class="glass-panel rounded-3xl p-6 sm:p-8 max-w-sm w-full border border-amber-500/30 space-y-6 shadow-2xl relative">
+      <div class="text-center space-y-2">
+        <div class="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 mx-auto flex items-center justify-center text-amber-400 text-xl">
+          <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <h3 class="text-lg font-black text-white">Owner Portal Page Access</h3>
+        <p class="text-xs text-slate-400">Enter security PIN to enter portal</p>
+      </div>
+
+      <div class="space-y-4">
+        <input type="password" id="owner-pin-input" maxlength="6" placeholder="••••" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-center text-xl font-mono tracking-widest text-white focus:outline-none focus:border-amber-500 transition" />
+        <div class="flex gap-2">
+          <button onclick="closeOwnerPinModal()" class="w-1/2 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-300 transition">Cancel</button>
+          <button onclick="verifyOwnerPin()" class="w-1/2 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold transition">Authorize</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Quick Track Lookup Modal -->
+  <div id="modal-quick-track" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md hidden p-4">
+    <div class="glass-panel rounded-3xl p-6 sm:p-8 max-w-md w-full border border-cyan-500/30 space-y-6 shadow-2xl">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-magnifying-glass text-cyan-400"></i> Track Order by 8A Code
+        </h3>
+        <button onclick="closeQuickTrackModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <label class="text-[11px] font-mono text-slate-400 block mb-1">Enter 8A Tracking Number</label>
+          <input type="text" id="quick-track-input" placeholder="e.g. 8A7F9X2B" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs font-mono text-cyan-400 uppercase placeholder-slate-600 focus:outline-none focus:border-cyan-500" />
+        </div>
+        <button onclick="submitQuickTrack()" class="w-full py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-xs uppercase tracking-wider transition">
+          View Live Order Status
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Purchase / Customize Order Modal (Dynamic pricing with color surcharges & scale) -->
+  <div id="modal-purchase" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md hidden p-4">
+    <div class="glass-panel rounded-3xl p-6 sm:p-8 max-w-lg w-full border border-slate-800 space-y-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+        <h3 id="buy-modal-title" class="text-lg font-black text-white flex items-center gap-2">Configure & Order 3D Print</h3>
+        <button onclick="closePurchaseModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="space-y-4">
+        <div class="bg-slate-900/60 p-4 rounded-2xl border border-slate-800 flex items-center gap-4">
+          <div id="buy-modal-icon-box" class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 text-xl flex-shrink-0">
+            <i class="fa-solid fa-cube"></i>
+          </div>
+          <div>
+            <h4 id="buy-modal-name" class="text-sm font-bold text-white">---</h4>
+            <p id="buy-modal-base-price" class="text-xs font-mono text-cyan-400 mt-0.5">Base Price: ฿---</p>
+          </div>
+        </div>
+
+        <!-- Filament Color Selection -->
+        <div class="space-y-2">
+          <label class="text-xs font-mono text-slate-400">Select Filament Material & Color (Includes Color Surcharge):</label>
+          <div id="buy-filament-options" class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            <!-- Dynamic filament choices -->
+          </div>
+        </div>
+
+        <!-- Scale Multiplier -->
+        <div class="space-y-1">
+          <div class="flex justify-between text-xs font-mono">
+            <span class="text-slate-400">Model Scale (Affects Pricing):</span>
+            <span id="buy-scale-val" class="text-cyan-300 font-bold">100% (Standard)</span>
+          </div>
+          <input type="range" id="buy-scale-slider" min="50" max="250" step="25" value="100" oninput="updateBuyTotal()" class="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer" />
+        </div>
+
+        <!-- Customer Info -->
+        <div class="space-y-3 pt-2 border-t border-slate-800">
+          <div>
+            <label class="text-xs font-mono text-slate-400 block mb-1">Your Name / Handle</label>
+            <input type="text" id="buy-customer-name" placeholder="e.g. Alex Ranger" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500" />
+          </div>
+          <div>
+            <label class="text-xs font-mono text-slate-400 block mb-1">Shipping Address / Contact Note</label>
+            <input type="text" id="buy-customer-address" placeholder="e.g. Bangkok University Lab #4" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500" />
+          </div>
+        </div>
+
+        <!-- Total Price & Confirm -->
+        <div class="flex items-center justify-between pt-4 border-t border-slate-800">
+          <div>
+            <span class="text-[10px] font-mono text-slate-500 block">FINAL PRICE (EST.)</span>
+            <span id="buy-total-price" class="text-xl font-black text-cyan-400">฿0</span>
+          </div>
+          <button onclick="confirmPurchaseOrder()" class="px-6 py-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-slate-950 font-black text-xs uppercase tracking-wider transition shadow-lg shadow-cyan-500/20">
+            Submit & Get 8A Code
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Add / Edit Catalog Model Modal (Extensive Tag Dropdown & Icon Picker) -->
+  <div id="modal-add-model" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md hidden p-4">
+    <div class="glass-panel rounded-3xl p-6 sm:p-8 max-w-md w-full border border-slate-800 space-y-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+        <h3 id="model-modal-title" class="text-base font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-plus text-cyan-400"></i> Add New 3D Print Model
+        </h3>
+        <button onclick="closeAddModelModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="space-y-3 font-mono text-xs">
+        <input type="hidden" id="edit-model-id" value="" />
+        <div>
+          <label class="text-slate-400 block mb-1">Model Title</label>
+          <input type="text" id="new-model-title" placeholder="e.g. Crystal Dragon" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-cyan-500" />
+        </div>
+
+        <div>
+          <label class="text-slate-400 block mb-1">Category & Tag</label>
+          <select id="new-model-category" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-cyan-500">
+            <option value="Articulated">🐉 Articulated Toys & Creatures</option>
+            <option value="Tools">⚙️ Tools</option>
+            <option value="Miniatures">⚔️ Miniatures & Figurines</option>
+            <option value="Mechanical">🔧 Mechanical Gears & Boxes</option>
+            <option value="Toys">🧸 Children & Play Toys</option>
+            <option value="Functional">🛠️ Functional Household Items</option>
+            <option value="Cosplay">🛡️ Cosplay & Wearable Props</option>
+            <option value="Desk Decor">🪴 Desk Decor & Planters</option>
+            <option value="Fidget">🌀 Fidget & Sensory Toys</option>
+            <option value="Puzzles">🧩 Brain Teasers & Puzzles</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="text-slate-400 block mb-1">Model Icon / Symbol</label>
+          <select id="new-model-icon" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-cyan-500">
+            <option value="fa-dragon">🐉 Dragon / Creature</option>
+            <option value="fa-sword">⚔️ Sword / Weapon</option>
+            <option value="fa-gear">⚙️ Gear / Mechanism</option>
+            <option value="fa-cube">🧊 Geometric / Cube</option>
+            <option value="fa-robot">🤖 Robot / Mech</option>
+            <option value="fa-puzzle-piece">🧩 Puzzle / Toy</option>
+            <option value="fa-shield">🛡️ Shield / Armor</option>
+            <option value="fa-ghost">👻 Ghost / Monster</option>
+            <option value="fa-fire">🔥 Flame / Magic</option>
+            <option value="fa-crown">👑 Crown / Royalty</option>
+            <option value="fa-cat">🐱 Animal / Pet</option>
+            <option value="fa-rocket">🚀 Space / Vehicle</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="text-slate-400 block mb-1">Base Price (฿)</label>
+          <input type="number" id="new-model-price" value="150" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-cyan-500" />
+        </div>
+        <div>
+          <label class="text-slate-400 block mb-1">Description</label>
+          <textarea id="new-model-desc" rows="2" placeholder="High detail 3D physical plastic print model..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-cyan-500"></textarea>
+        </div>
+
+        <button onclick="submitNewCatalogModel()" id="model-submit-btn" class="w-full py-3 mt-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black uppercase tracking-wider transition">
+          Add Model to Catalog
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Add / Edit Filament Modal (Color Wheel Picker, NO hex input) -->
+  <div id="modal-add-filament" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md hidden p-4">
+    <div class="glass-panel rounded-3xl p-6 sm:p-8 max-w-sm w-full border border-amber-500/30 space-y-6 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+        <h3 id="filament-modal-title" class="text-base font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-plus text-amber-400"></i> Add New Filament
+        </h3>
+        <button onclick="closeAddFilamentModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="space-y-4 font-mono text-xs">
+        <input type="hidden" id="edit-filament-id" value="" />
+        <div>
+          <label class="text-slate-400 block mb-1">Filament Name</label>
+          <input type="text" id="new-filament-name" placeholder="e.g. Neon Pink PLA" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-amber-500" />
+        </div>
+        <div>
+          <label class="text-slate-400 block mb-2">Select Filament Color (Color Wheel)</label>
+          <div class="flex items-center gap-3 bg-slate-900/80 p-3 rounded-2xl border border-slate-800">
+            <input type="color" id="new-filament-color" value="#ec4899" class="w-14 h-12 rounded-xl bg-slate-950 border border-slate-700 cursor-pointer p-1" />
+            <div class="space-y-0.5">
+              <span class="text-white font-bold block">Color Wheel Picker</span>
+              <span class="text-[10px] text-slate-400">Click color block to open wheel</span>
+            </div>
+          </div>
+        </div>
+        <div>
+          <label class="text-slate-400 block mb-1">Price Surcharge (฿)</label>
+          <input type="number" id="new-filament-surcharge" value="0" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-amber-500" />
+        </div>
+
+        <button onclick="submitNewFilament()" id="filament-submit-btn" class="w-full py-3 mt-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black uppercase tracking-wider transition">
+          Add Filament
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Application Engine with Firebase Firestore Persistence -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, collection, doc, setDoc, getDocs, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-3d-print-hub-app';
+    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { apiKey: "mock", projectId: "mock" };
+
+    let app, db, auth, userId = null;
+    let catalogModels = [];
+    let filaments = [];
+    let orders = [];
+
+    async function initFirebase() {
+      try {
+        app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        auth = getAuth(app);
+
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+          await signInWithCustomToken(auth, __initial_auth_token);
+        } else {
+          await signInAnonymously(auth);
+        }
+        userId = auth.currentUser?.uid || crypto.randomUUID();
+        
+        setupFirestoreListeners();
+      } catch (err) {
+        console.warn("Firebase fallback to in-memory due to config:", err);
+        loadDefaultInMemoryData();
+      }
+    }
+
+    function loadDefaultInMemoryData() {
+      catalogModels = [
+        { id: 'mod-1', title: 'Articulated Crystal Dragon', category: 'Articulated', icon: 'fa-dragon', price: 50, desc: 'Fully articulated print-in-place crystal dragon with flexible spine and razor spikes.' },
+        { id: 'mod-2', title: 'Cyberpunk Katana Sword', category: 'Tools', icon: 'fa-sword', price: 250, desc: 'Futuristic collapsible gravity sword with ergonomic grip and neon accents.' },
+        { id: 'mod-3', title: 'Miniature Fantasy Dragon', category: 'Miniatures', icon: 'fa-ghost', price: 120, desc: 'High detail 0.08mm resolution miniature dragon statue for tabletop games.' },
+        { id: 'mod-4', title: 'Geared Mechanical Iris Box', category: 'Mechanical', icon: 'fa-gear', price: 220, desc: 'Intricate iris aperture box with smoothly meshing 3D printed planetary gears.' },
+        { id: 'mod-5', title: 'Flexible Octo-Fidget Toy', category: 'Fidget', icon: 'fa-cat', price: 90, desc: 'Cute tactile octopus fidget toy with flexible tentacles. Extremely satisfying.' },
+        { id: 'mod-6', title: 'Geometric Desk Organizer', category: 'Desk Decor', icon: 'fa-cube', price: 150, desc: 'Modern low-poly pen and phone holder designed with optimal desk ergonomics.' }
+      ];
+      filaments = [
+        { id: 'silk-silver', name: 'Silk Silver PLA', color: '#cbd5e1', surcharge: 0, inStock: true },
+        { id: 'neon-cyan', name: 'Neon Cyan PLA', color: '#22d3ee', surcharge: 10, inStock: true },
+        { id: 'galaxy-purple', name: 'Galaxy Purple PLA', color: '#c084fc', surcharge: 15, inStock: true },
+        { id: 'matte-black', name: 'Matte Carbon Black', color: '#1e293b', surcharge: 5, inStock: true },
+        { id: 'emerald-green', name: 'Emerald Green PLA', color: '#10b981', surcharge: 10, inStock: true }
+      ];
+      orders = [];
+      renderCategoryPills();
+      renderShopGrid();
+    }
+
+    function setupFirestoreListeners() {
+      if (!db) return;
+
+      const modelsCol = collection(db, 'artifacts', appId, 'public', 'data', 'catalogModels');
+      onSnapshot(modelsCol, (snapshot) => {
+        catalogModels = [];
+        snapshot.forEach(docSnap => {
+          catalogModels.push({ id: docSnap.id, ...docSnap.data() });
+        });
+        if (catalogModels.length === 0) {
+          loadDefaultInMemoryData();
+          catalogModels.forEach(m => setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'catalogModels', m.id), m));
+          filaments.forEach(f => setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'filaments', f.id), f));
+        } else {
+          renderCategoryPills();
+          renderShopGrid();
+          if (activeView === 'owner') renderOwnerPortal();
+        }
+      }, (err) => console.error("Models listener error:", err));
+
+      const filamentsCol = collection(db, 'artifacts', appId, 'public', 'data', 'filaments');
+      onSnapshot(filamentsCol, (snapshot) => {
+        filaments = [];
+        snapshot.forEach(docSnap => {
+          filaments.push({ id: docSnap.id, ...docSnap.data() });
+        });
+        if (activeView === 'owner') renderOwnerFilaments();
+      }, (err) => console.error("Filaments listener error:", err));
+
+      const ordersCol = collection(db, 'artifacts', appId, 'public', 'data', 'orders');
+      onSnapshot(ordersCol, (snapshot) => {
+        orders = [];
+        snapshot.forEach(docSnap => {
+          orders.push({ id: docSnap.id, ...docSnap.data() });
+        });
+        if (activeView === 'owner') renderOwnerPortalOrders();
+      }, (err) => console.error("Orders listener error:", err));
+    }
+
+    window.saveModelToDb = async function(model) {
+      if (!db || !userId) return;
+      await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'catalogModels', model.id), model);
+    }
+
+    window.removeModelFromDb = async function(id) {
+      if (!db || !userId) return;
+      await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'catalogModels', id));
+    }
+
+    window.saveFilamentToDb = async function(filament) {
+      if (!db || !userId) return;
+      await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'filaments', filament.id), filament);
+    }
+
+    window.removeFilamentFromDb = async function(id) {
+      if (!db || !userId) return;
+      await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'filaments', id));
+    }
+
+    window.saveOrderToDb = async function(order) {
+      if (!db || !userId) return;
+      await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'orders', order.trackingCode), order);
+    }
+
+    window.removeOrderFromDb = async function(code) {
+      if (!db || !userId) return;
+      await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'orders', code));
+    }
+
+    let currentCategory = 'All';
+    let activeView = 'shop';
+    let activeTrackingCode = null;
+    let currentConfiguredModel = null;
+    let selectedFilamentId = 'neon-cyan';
+
+    window.showToast = function(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      const bgColors = type === 'success' ? 'bg-cyan-950/95 border-cyan-500/40 text-cyan-300' : 'bg-rose-950/95 border-rose-500/40 text-rose-300';
+      const icon = type === 'success' ? 'fa-circle-check text-cyan-400' : 'fa-triangle-exclamation text-rose-400';
+
+      toast.className = `glass-panel p-4 rounded-2xl border ${bgColors} flex items-center gap-3 shadow-xl pointer-events-auto transform translate-y-2 opacity-0 transition-all duration-300 font-mono text-xs`;
+      toast.innerHTML = `<i class="fa-solid ${icon} text-base"></i><span class="flex-grow">${message}</span>`;
+      
+      container.appendChild(toast);
+      setTimeout(() => { toast.classList.remove('translate-y-2', 'opacity-0'); }, 10);
+
+      setTimeout(() => {
+        toast.classList.add('translate-y-2', 'opacity-0');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    window.navigateTo = function(viewName) {
+      if (viewName === 'owner') {
+        openOwnerPinModal();
+        return;
+      }
+
+      activeView = viewName;
+      document.getElementById('view-shop').classList.add('hidden');
+      document.getElementById('view-tracking').classList.add('hidden');
+      document.getElementById('view-owner').classList.add('hidden');
+
+      if (viewName === 'shop') {
+        document.getElementById('view-shop').classList.remove('hidden');
+        renderShopGrid();
+      } else if (viewName === 'tracking') {
+        document.getElementById('view-tracking').classList.remove('hidden');
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    window.exitOwnerPortal = function() {
+      navigateTo('shop');
+    }
+
+    window.renderCategoryPills = function() {
+      const container = document.getElementById('category-pills-container');
+      const categories = ['All', 'Articulated', 'Miniatures', 'Mechanical', 'Toys', 'Functional', 'Cosplay', 'Desk Decor', 'Fidget', 'Puzzles'];
+      
+      container.innerHTML = categories.map(cat => {
+        const active = currentCategory === cat;
+        const activeClass = active ? 'bg-cyan-500 text-slate-950 font-bold border-cyan-400 shadow-lg shadow-cyan-500/20' : 'bg-slate-900/80 text-slate-300 border-slate-800 hover:border-slate-700';
+        return `<button onclick="setCategory('${cat}')" class="px-3.5 py-1.5 rounded-xl text-xs font-mono border transition flex-shrink-0 ${activeClass}">${cat}</button>`;
+      }).join('');
+    }
+
+    window.setCategory = function(cat) {
+      currentCategory = cat;
+      renderCategoryPills();
+      renderShopGrid();
+    }
+
+    window.renderShopGrid = function() {
+      renderCategoryPills();
+      const grid = document.getElementById('product-grid');
+      const searchElem = document.getElementById('shop-search-input');
+      const search = searchElem ? searchElem.value.toLowerCase() : '';
+
+      const filtered = catalogModels.filter(m => {
+        const matchesCat = currentCategory === 'All' || m.category === currentCategory;
+        const matchesSearch = m.title.toLowerCase().includes(search) || m.desc.toLowerCase().includes(search);
+        return matchesCat && matchesSearch;
+      });
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full py-16 text-center space-y-3 glass-panel rounded-3xl border border-slate-800">
+            <i class="fa-solid fa-cube text-4xl text-slate-600"></i>
+            <p class="text-sm font-mono text-slate-400">No 3D print models found matching your search.</p>
+          </div>`;
+        return;
+      }
+
+      grid.innerHTML = filtered.map(model => `
+        <div class="glass-card rounded-3xl overflow-hidden border border-slate-800 flex flex-col justify-between group">
+          <div class="p-6 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="bg-slate-900/80 px-3 py-1 rounded-xl border border-slate-800 text-[10px] font-mono text-cyan-400 font-bold">
+                ${model.category}
+              </span>
+              <div class="w-10 h-10 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 text-base shadow-inner">
+                <i class="fa-solid ${model.icon || 'fa-cube'}"></i>
+              </div>
+            </div>
+            <h3 class="text-base font-bold text-white tracking-tight">${model.title}</h3>
+            <p class="text-xs text-slate-400 line-clamp-3 leading-relaxed">${model.desc}</p>
+          </div>
+          <div class="p-6 pt-0 flex items-center justify-between mt-2">
+            <div>
+              <span class="text-[10px] font-mono text-slate-500 block">BASE PRICE</span>
+              <span class="text-lg font-black text-cyan-400 font-mono">฿${model.price}</span>
+            </div>
+            <div>
+              <button onclick="openPurchaseModal('${model.id}')" class="px-4 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-black transition shadow-md flex items-center gap-1.5">
+                <i class="fa-solid fa-cart-shopping"></i> Order Print
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    window.openPurchaseModal = function(modelId) {
+      const model = catalogModels.find(m => m.id === modelId);
+      if (!model) return;
+      currentConfiguredModel = model;
+
+      document.getElementById('buy-modal-title').innerText = `Order: ${model.title}`;
+      document.getElementById('buy-modal-name').innerText = model.title;
+      document.getElementById('buy-modal-base-price').innerText = `Base Price: ฿${model.price}`;
+      document.getElementById('buy-modal-icon-box').innerHTML = `<i class="fa-solid ${model.icon || 'fa-cube'}"></i>`;
+      document.getElementById('buy-scale-slider').value = 100;
+      document.getElementById('buy-scale-val').innerText = '100% (Standard)';
+
+      const filamentContainer = document.getElementById('buy-filament-options');
+      if (filaments.length === 0) {
+        filamentContainer.innerHTML = `<p class="col-span-full text-xs font-mono text-rose-400">No filaments available currently.</p>`;
+      } else {
+        if (!filaments.some(f => f.id === selectedFilamentId && f.inStock)) {
+          const firstAvailable = filaments.find(f => f.inStock);
+          selectedFilamentId = firstAvailable ? firstAvailable.id : (filaments[0] ? filaments[0].id : null);
+        }
+
+        filamentContainer.innerHTML = filaments.map(f => {
+          const isSelected = f.id === selectedFilamentId;
+          const borderClass = isSelected ? 'border-cyan-500 bg-cyan-950/40 text-white' : 'border-slate-800 bg-slate-900 text-slate-400';
+          const stockBadge = f.inStock ? `<span class="text-[9px] text-cyan-300 ml-auto">+฿${f.surcharge}</span>` : '<span class="text-[9px] text-rose-400 ml-auto">[Out of Stock]</span>';
+          const disabledAttr = f.inStock ? '' : 'opacity-50 pointer-events-none';
+
+          return `
+            <div onclick="${f.inStock ? `selectFilament('${f.id}')` : ''}" class="p-2.5 rounded-xl border ${borderClass} cursor-pointer transition flex items-center gap-2 text-xs font-mono ${disabledAttr}">
+              <span class="w-3.5 h-3.5 rounded-full shadow-sm flex-shrink-0" style="background-color: ${f.color}"></span>
+              <span class="truncate">${f.name}</span>
+              ${stockBadge}
+            </div>
+          `;
+        }).join('');
+      }
+
+      updateBuyTotal();
+      document.getElementById('modal-purchase').classList.remove('hidden');
+    }
+
+    window.selectFilament = function(filId) {
+      selectedFilamentId = filId;
+      openPurchaseModal(currentConfiguredModel.id);
+    }
+
+    window.updateBuyTotal = function() {
+      if (!currentConfiguredModel) return;
+      const scale = parseInt(document.getElementById('buy-scale-slider').value);
+      document.getElementById('buy-scale-val').innerText = `${scale}%`;
+
+      const filamentObj = filaments.find(f => f.id === selectedFilamentId);
+      const surcharge = filamentObj ? filamentObj.surcharge : 0;
+
+      const scaleMultiplier = Math.pow(scale / 100, 1.5);
+      const calculated = Math.round((currentConfiguredModel.price * scaleMultiplier) + surcharge);
+      document.getElementById('buy-total-price').innerText = `฿${calculated}`;
+    }
+
+    window.closePurchaseModal = function() {
+      document.getElementById('modal-purchase').classList.add('hidden');
+    }
+
+    window.confirmPurchaseOrder = async function() {
+      if (!currentConfiguredModel) return;
+      const customerName = document.getElementById('buy-customer-name').value.trim() || 'Anonymous Maker';
+      const customerAddress = document.getElementById('buy-customer-address').value.trim() || 'Bangkok, Thailand';
+      const scale = document.getElementById('buy-scale-slider').value;
+      const filamentObj = filaments.find(f => f.id === selectedFilamentId) || filaments[0];
+
+      if (!filamentObj || !filamentObj.inStock) {
+        showToast('Please select a valid in-stock filament.', 'error');
+        return;
+      }
+
+      const trackingCode = '8A' + Math.random().toString(36).substring(2, 8).toUpperCase();
+      const scaleMultiplier = Math.pow(scale / 100, 1.5);
+      const finalPrice = Math.round((currentConfiguredModel.price * scaleMultiplier) + filamentObj.surcharge);
+
+      const printersList = ['Bambu Lab X1-Carbon #1', 'Prusa MK4S Farm #3', 'Creality Ender 3 S1 Pro', 'Bambu Lab A1 Mini'];
+      const assignedPrinter = printersList[Math.floor(Math.random() * printersList.length)];
+
+      const newOrder = {
+        trackingCode,
+        customerName,
+        customerAddress,
+        modelTitle: currentConfiguredModel.title,
+        modelIcon: currentConfiguredModel.icon || 'fa-cube',
+        specs: `${filamentObj.name} | ${scale}% Scale (฿${finalPrice})`,
+        printerName: assignedPrinter,
+        stage: 0,
+        logs: [
+          `▶ Order created for ${customerName} (฿${finalPrice}).`,
+          `▶ Filament selected: ${filamentObj.name} (+฿${filamentObj.surcharge}).`,
+          `▶ Assigned to physical machine: ${assignedPrinter}.`
+        ],
+        createdAt: new Date().toISOString().replace('T', ' ').substring(0, 16)
+      };
+
+      await saveOrderToDb(newOrder);
+      closePurchaseModal();
+
+      showToast(`Order placed successfully! Tracking Code: ${trackingCode}`);
+      viewOrderTracking(trackingCode);
+    }
+
+    window.viewOrderTracking = function(code) {
+      const order = orders.find(o => o.trackingCode === code);
+      if (!order) {
+        showToast('Tracking code not found in active orders.', 'error');
+        return;
+      }
+
+      activeTrackingCode = code;
+      document.getElementById('track-number-display').innerText = order.trackingCode;
+      document.getElementById('track-item-title').innerHTML = `<i class="fa-solid ${order.modelIcon || 'fa-cube'} text-cyan-400 mr-1.5"></i> ${order.modelTitle}`;
+      document.getElementById('track-item-specs').innerText = order.specs;
+      document.getElementById('assigned-printer-name').innerText = order.printerName;
+
+      const stages = ['Order Received', 'Printing in Progress', 'Inspected & Packaged', 'Delivered to Customer'];
+      document.getElementById('current-status-title').innerText = stages[order.stage];
+
+      const percentages = [0, 33, 66, 100];
+      document.getElementById('progress-bar-fill').style.width = `${percentages[order.stage]}%`;
+
+      for (let i = 0; i <= 3; i++) {
+        const blob = document.getElementById(`node-blob-${i}`);
+        if (i <= order.stage) {
+          blob.className = 'w-10 h-10 rounded-xl bg-cyan-500 text-slate-950 font-black border-2 border-cyan-400 flex items-center justify-center text-xs shadow-lg shadow-cyan-500/30 transition-all';
+        } else {
+          blob.className = 'w-10 h-10 rounded-xl bg-slate-900 border-2 border-slate-700 flex items-center justify-center text-slate-500 text-xs font-bold transition-all';
+        }
+      }
+
+      const logList = document.getElementById('audit-log-list');
+      logList.innerHTML = order.logs.map(l => `<li>${l}</li>`).join('');
+
+      navigateTo('tracking');
+    }
+
+    window.copyTrackingNumber = function() {
+      if (!activeTrackingCode) return;
+      const textarea = document.createElement('textarea');
+      textarea.value = activeTrackingCode;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      showToast(`Copied tracking code ${activeTrackingCode} to clipboard!`);
+    }
+
+    window.openQuickTrackModal = function() {
+      document.getElementById('modal-quick-track').classList.remove('hidden');
+    }
+
+    window.closeQuickTrackModal = function() {
+      document.getElementById('modal-quick-track').classList.add('hidden');
+    }
+
+    window.submitQuickTrack = function() {
+      const code = document.getElementById('quick-track-input').value.trim().toUpperCase();
+      if (!code) {
+        showToast('Please enter a valid tracking code.', 'error');
+        return;
+      }
+      closeQuickTrackModal();
+      viewOrderTracking(code);
+    }
+
+    window.openOwnerPinModal = function() {
+      document.getElementById('owner-pin-input').value = '';
+      document.getElementById('modal-owner-pin').classList.remove('hidden');
+      setTimeout(() => document.getElementById('owner-pin-input').focus(), 100);
+    }
+
+    window.closeOwnerPinModal = function() {
+      document.getElementById('modal-owner-pin').classList.add('hidden');
+    }
+
+    window.verifyOwnerPin = function() {
+      const pin = document.getElementById('owner-pin-input').value.trim();
+      if (pin === '85455') {
+        closeOwnerPinModal();
+        showToast('Owner Portal access granted!');
+        
+        activeView = 'owner';
+        document.getElementById('view-shop').classList.add('hidden');
+        document.getElementById('view-tracking').classList.add('hidden');
+        document.getElementById('view-owner').classList.remove('hidden');
+        renderOwnerPortal();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        showToast('Incorrect security PIN.', 'error');
+      }
+    }
+
+    window.renderOwnerPortal = function() {
+      const activeCount = orders.filter(o => o.stage < 3).length;
+      const completedCount = orders.filter(o => o.stage === 3).length;
+
+      document.getElementById('owner-stat-total').innerText = orders.length;
+      document.getElementById('owner-stat-active').innerText = activeCount;
+      document.getElementById('owner-stat-completed').innerText = completedCount;
+
+      renderOwnerFilaments();
+      renderOwnerCatalog();
+      renderOwnerPortalOrders();
+    }
+
+    window.renderOwnerFilaments = function() {
+      const container = document.getElementById('owner-filaments-container');
+      if (filaments.length === 0) {
+        container.innerHTML = `<p class="col-span-full text-xs font-mono text-slate-500">No filaments in stock. Click "Add New Filament" above.</p>`;
+        return;
+      }
+
+      container.innerHTML = filaments.map(f => `
+        <div class="glass-card p-4 rounded-2xl border border-slate-800 flex flex-col justify-between space-y-3 font-mono text-xs">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <span class="w-4 h-4 rounded-full shadow-md flex-shrink-0" style="background-color: ${f.color}"></span>
+              <span class="text-slate-200 font-bold truncate">${f.name}</span>
+            </div>
+            <div class="flex items-center space-x-1">
+              <button onclick="openEditFilamentModal('${f.id}')" class="text-slate-400 hover:text-amber-400 transition p-1" title="Edit filament">
+                <i class="fa-solid fa-pen-to-square"></i>
+              </button>
+              <button onclick="deleteFilament('${f.id}')" class="text-slate-500 hover:text-rose-400 transition p-1" title="Delete filament">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </div>
+          </div>
+          <div class="flex items-center justify-between pt-2 border-t border-slate-800">
+            <span class="text-slate-400">+฿${f.surcharge} surcharge</span>
+            <button onclick="toggleFilamentStock('${f.id}')" class="px-2.5 py-1 rounded-xl text-[10px] font-bold transition ${f.inStock ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-red-500/20 text-red-400 border border-red-500/30'}">
+              ${f.inStock ? 'In Stock' : 'Out of Stock'}
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    window.openAddFilamentModal = function() {
+      document.getElementById('edit-filament-id').value = '';
+      document.getElementById('filament-modal-title').innerHTML = '<i class="fa-solid fa-plus text-amber-400"></i> Add New Filament';
+      document.getElementById('filament-submit-btn').innerText = 'Add Filament';
+      document.getElementById('new-filament-name').value = '';
+      document.getElementById('new-filament-color').value = '#ec4899';
+      document.getElementById('new-filament-surcharge').value = '10';
+      document.getElementById('modal-add-filament').classList.remove('hidden');
+    }
+
+    window.openEditFilamentModal = function(id) {
+      const fil = filaments.find(f => f.id === id);
+      if (!fil) return;
+      document.getElementById('edit-filament-id').value = fil.id;
+      document.getElementById('filament-modal-title').innerHTML = '<i class="fa-solid fa-pen-to-square text-amber-400"></i> Edit Filament';
+      document.getElementById('filament-submit-btn').innerText = 'Save Changes';
+      document.getElementById('new-filament-name').value = fil.name;
+      document.getElementById('new-filament-color').value = fil.color;
+      document.getElementById('new-filament-surcharge').value = fil.surcharge;
+      document.getElementById('modal-add-filament').classList.remove('hidden');
+    }
+
+    window.closeAddFilamentModal = function() {
+      document.getElementById('modal-add-filament').classList.add('hidden');
+    }
+
+    window.submitNewFilament = async function() {
+      const editId = document.getElementById('edit-filament-id').value;
+      const name = document.getElementById('new-filament-name').value.trim();
+      const color = document.getElementById('new-filament-color').value;
+      const surcharge = parseInt(document.getElementById('new-filament-surcharge').value) || 0;
+
+      if (!name) {
+        showToast('Please enter a filament name.', 'error');
+        return;
+      }
+
+      if (editId) {
+        const fil = filaments.find(f => f.id === editId);
+        if (fil) {
+          fil.name = name;
+          fil.color = color;
+          fil.surcharge = surcharge;
+          await saveFilamentToDb(fil);
+          showToast(`Updated filament: ${name}`);
+        }
+      } else {
+        const newFil = {
+          id: 'fil-' + Date.now(),
+          name,
+          color,
+          surcharge,
+          inStock: true
+        };
+        await saveFilamentToDb(newFil);
+        showToast(`Added new filament: ${name}`);
+      }
+
+      closeAddFilamentModal();
+    }
+
+    window.toggleFilamentStock = async function(id) {
+      const fil = filaments.find(f => f.id === id);
+      if (fil) {
+        fil.inStock = !fil.inStock;
+        await saveFilamentToDb(fil);
+        showToast(`Updated stock status for ${fil.name}.`);
+      }
+    }
+
+    window.deleteFilament = async function(id) {
+      await removeFilamentFromDb(id);
+      showToast('Filament removed successfully.');
+    }
+
+    window.renderOwnerCatalog = function() {
+      const container = document.getElementById('owner-catalog-container');
+      container.innerHTML = catalogModels.map(m => `
+        <div class="glass-card p-4 rounded-2xl border border-slate-800 flex flex-col justify-between space-y-3">
+          <div class="space-y-1">
+            <h4 class="text-xs font-bold text-white flex items-center gap-2">
+              <i class="fa-solid ${m.icon || 'fa-cube'} text-cyan-400"></i> ${m.title}
+            </h4>
+            <span class="text-[10px] font-mono text-cyan-400 block">${m.category} | ฿${m.price}</span>
+            <p class="text-[11px] text-slate-400 line-clamp-1">${m.desc}</p>
+          </div>
+          <div class="flex items-center justify-between pt-2 border-t border-slate-800 text-xs font-mono">
+            <button onclick="openEditCatalogModel('${m.id}')" class="text-slate-400 hover:text-cyan-400 transition flex items-center gap-1" title="Edit Model">
+              <i class="fa-solid fa-pen-to-square"></i> Edit Model
+            </button>
+            <button onclick="deleteCatalogModel('${m.id}')" class="text-slate-500 hover:text-rose-400 transition flex items-center gap-1" title="Remove Model">
+              <i class="fa-solid fa-trash-can"></i> Remove
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    window.openAddModelModal = function() {
+      document.getElementById('edit-model-id').value = '';
+      document.getElementById('model-modal-title').innerHTML = '<i class="fa-solid fa-plus text-cyan-400"></i> Add New 3D Print Model';
+      document.getElementById('model-submit-btn').innerText = 'Add Model to Catalog';
+      document.getElementById('new-model-title').value = '';
+      document.getElementById('new-model-category').value = 'Articulated';
+      document.getElementById('new-model-icon').value = 'fa-dragon';
+      document.getElementById('new-model-price').value = '150';
+      document.getElementById('new-model-desc').value = '';
+      document.getElementById('modal-add-model').classList.remove('hidden');
+    }
+
+    window.openEditCatalogModel = function(id) {
+      const model = catalogModels.find(m => m.id === id);
+      if (!model) return;
+      document.getElementById('edit-model-id').value = model.id;
+      document.getElementById('model-modal-title').innerHTML = '<i class="fa-solid fa-pen-to-square text-cyan-400"></i> Edit 3D Print Model';
+      document.getElementById('model-submit-btn').innerText = 'Save Changes';
+      document.getElementById('new-model-title').value = model.title;
+      document.getElementById('new-model-category').value = model.category || 'Articulated';
+      document.getElementById('new-model-icon').value = model.icon || 'fa-cube';
+      document.getElementById('new-model-price').value = model.price;
+      document.getElementById('new-model-desc').value = model.desc;
+      document.getElementById('modal-add-model').classList.remove('hidden');
+    }
+
+    window.closeAddModelModal = function() {
+      document.getElementById('modal-add-model').classList.add('hidden');
+    }
+
+    window.submitNewCatalogModel = async function() {
+      const editId = document.getElementById('edit-model-id').value;
+      const title = document.getElementById('new-model-title').value.trim();
+      const category = document.getElementById('new-model-category').value;
+      const icon = document.getElementById('new-model-icon').value;
+      const price = parseInt(document.getElementById('new-model-price').value) || 150;
+      const desc = document.getElementById('new-model-desc').value.trim() || 'Custom 3D printed model.';
+
+      if (!title) {
+        showToast('Please enter a model title.', 'error');
+        return;
+      }
+
+      if (editId) {
+        const model = catalogModels.find(m => m.id === editId);
+        if (model) {
+          model.title = title;
+          model.category = category;
+          model.icon = icon;
+          model.price = price;
+          model.desc = desc;
+          await saveModelToDb(model);
+          showToast(`Updated model: ${title}`);
+        }
+      } else {
+        const newModel = {
+          id: 'mod-' + Date.now(),
+          title,
+          category,
+          icon,
+          price,
+          desc
+        };
+        await saveModelToDb(newModel);
+        showToast(`Added new catalog model: ${title}`);
+      }
+
+      closeAddModelModal();
+    }
+
+    window.deleteCatalogModel = async function(id) {
+      await removeModelFromDb(id);
+      showToast('Catalog model removed.');
+    }
+
+    window.renderOwnerPortalOrders = function() {
+      const tbody = document.getElementById('owner-orders-table-body');
+      const searchElem = document.getElementById('owner-search-input');
+      const search = searchElem ? searchElem.value.toLowerCase() : '';
+
+      const filtered = orders.filter(o => 
+        o.trackingCode.toLowerCase().includes(search) || 
+        o.customerName.toLowerCase().includes(search) || 
+        o.modelTitle.toLowerCase().includes(search)
+      );
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-500">No customer orders found.</td></tr>`;
+        return;
+      }
+
+      const stageNames = ['Received', 'Printing', 'Packaged', 'Delivered'];
+      const stageBadges = [
+        'bg-slate-800 text-slate-300 border-slate-700',
+        'bg-amber-950/80 text-amber-300 border-amber-500/30',
+        'bg-purple-950/80 text-purple-300 border-purple-500/30',
+        'bg-emerald-950/80 text-emerald-300 border-emerald-500/30'
+      ];
+
+      tbody.innerHTML = filtered.map(o => `
+        <tr class="hover:bg-slate-900/60 transition">
+          <td class="p-3 font-bold text-cyan-400">${o.trackingCode}</td>
+          <td class="p-3">
+            <span class="text-white block font-bold">${o.customerName}</span>
+            <span class="text-[10px] text-slate-500">${o.customerAddress}</span>
+          </td>
+          <td class="p-3 text-slate-200">
+            <span class="flex items-center gap-1.5 font-bold">
+              <i class="fa-solid ${o.modelIcon || 'fa-cube'} text-cyan-400"></i> ${o.modelTitle}
+            </span>
+          </td>
+          <td class="p-3 text-[11px] text-slate-400">${o.specs}</td>
+          <td class="p-3">
+            <span class="px-2.5 py-1 rounded-full text-[10px] font-bold border ${stageBadges[o.stage]}">
+              ${stageNames[o.stage]}
+            </span>
+          </td>
+          <td class="p-3 text-right space-x-2">
+            <button onclick="advanceOrderStage('${o.trackingCode}')" class="px-2.5 py-1 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 text-[10px] font-bold transition" title="Advance Stage">
+              <i class="fa-solid fa-forward"></i> Stage
+            </button>
+            <button onclick="deleteOrder('${o.trackingCode}')" class="p-1.5 text-slate-500 hover:text-rose-400 transition" title="Delete Order">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    window.advanceOrderStage = async function(code) {
+      const order = orders.find(o => o.trackingCode === code);
+      if (!order) return;
+
+      if (order.stage < 3) {
+        order.stage++;
+        const stageNames = ['Received', 'Printing in Progress', 'Inspected & Packaged', 'Delivered to Customer'];
+        order.logs.push(`▶ Status updated by Owner to: ${stageNames[order.stage]}`);
+        await saveOrderToDb(order);
+        showToast(`Order ${code} advanced to ${stageNames[order.stage]}`);
+      } else {
+        showToast(`Order ${code} is already completed/delivered.`);
+      }
+    }
+
+    window.deleteOrder = async function(code) {
+      await removeOrderFromDb(code);
+      showToast(`Order ${code} deleted.`);
+    }
+
+    window.onload = function() {
+      initFirebase();
+    };
+  </script>
+</body>
+</html>
