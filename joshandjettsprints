@@ -1,0 +1,2733 @@
+<!DOCTYPE html>
+<html lang="en" class="dark h-full bg-slate-950 text-slate-100">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Josh and Jett's 3D Prints | Exclusive to King's Bangkok</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['Fira Code', 'monospace'] },
+          colors: { brand: { 50:'#ecfeff',100:'#cffaff',400:'#22d3ee',500:'#06b6d4',600:'#0891b2',900:'#164e63',950:'#083344' } }
+        }
+      }
+    }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+    import { getFirestore, collection, doc, getDocs, getDoc, setDoc, deleteDoc, writeBatch, onSnapshot }
+      from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyB_pYF0n9oiJkA8Jh10wibZbOhOKdPiEko",
+      authDomain: "joshandjettprintserver.firebaseapp.com",
+      projectId: "joshandjettprintserver",
+      storageBucket: "joshandjettprintserver.firebasestorage.app",
+      messagingSenderId: "692380612549",
+      appId: "1:692380612549:web:353ae06c88e080f6073dac",
+      measurementId: "G-GCKBF10950"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Expose to global so the main script can use them
+    window.__fb = {
+      db,
+      collection, doc, getDocs, getDoc, setDoc, deleteDoc, writeBatch, onSnapshot,
+      ready: true
+    };
+    window.dispatchEvent(new Event('firebase-ready'));
+  </script>
+
+  <style>
+    body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at 50% 0%, #0f172a 0%, #020617 100%); min-height: 100vh; }
+    .glass-panel { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.08); }
+    .glass-card { background: rgba(30, 41, 59, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.05); transition: all .25s cubic-bezier(.4,0,.2,1); }
+    .glass-card:hover { border-color: rgba(34,211,238,.3); transform: translateY(-2px); box-shadow: 0 12px 30px -10px rgba(6,182,212,.15); }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #020617; }
+    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #0891b2; }
+    input[type=range] { accent-color: #06b6d4; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .input-error { border-color: #f43f5e !important; box-shadow: 0 0 0 3px rgba(244,63,94,.15); }
+    .field-error-msg { color: #fda4af; font-size: 10px; font-family: 'Fira Code', monospace; margin-top: 4px; display: flex; align-items: center; gap: 4px; }
+
+    .option-chip { cursor: pointer; user-select: none; }
+    .option-chip.selected { border-color: #06b6d4 !important; background: rgba(8,145,178,.25) !important; color: #fff !important; }
+
+    .product-img-wrap { position: relative; width: 100%; aspect-ratio: 4/3; overflow: hidden; background: #0f172a; border-radius: 1rem 1rem 0 0; cursor: pointer; }
+    .product-img-wrap img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; will-change: transform, object-position; }
+    .product-img-wrap:hover img { filter: brightness(1.1); }
+    .product-img-wrap .zoom-hint { position: absolute; inset: 0; background: rgba(0,0,0,0); display: flex; align-items: center; justify-content: center; opacity: 0; transition: all .2s; }
+    .product-img-wrap:hover .zoom-hint { background: rgba(0,0,0,0.35); opacity: 1; }
+    .img-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, rgba(6,182,212,.08), rgba(16,185,129,.08)); }
+
+    #crop-canvas { position: relative; width: 100%; aspect-ratio: 4/3; overflow: hidden; background: #020617; border-radius: 1rem; cursor: grab; }
+    #crop-canvas.dragging { cursor: grabbing; }
+    #crop-canvas img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; user-select: none; pointer-events: none; }
+    #crop-grid { position: absolute; inset: 0; pointer-events: none; opacity: .25; background-image: linear-gradient(rgba(255,255,255,.6) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.6) 1px, transparent 1px); background-size: 33.33% 33.33%; }
+    #crop-border { position: absolute; inset: 8px; border: 2px solid rgba(34,211,238,.7); border-radius: .75rem; pointer-events: none; }
+
+    .sync-pill { display: inline-flex; align-items: center; gap: .4rem; font-size: 10px; font-family: 'Fira Code', monospace; padding: .25rem .55rem; border-radius: .6rem; border: 1px solid rgba(255,255,255,.08); background: rgba(15,23,42,.7); }
+    .sync-pill.ok { border-color: rgba(16,185,129,.4); color: #6ee7b7; }
+    .sync-pill.busy { border-color: rgba(34,211,238,.4); color: #67e8f9; }
+    .sync-pill.err { border-color: rgba(244,63,94,.4); color: #fda4af; }
+    .sync-pill.failed { border-color: rgba(244,63,94,.6); color: #fda4af; background: rgba(76,5,25,.5); }
+    .sync-dot { width: 6px; height: 6px; border-radius: 9999px; background: currentColor; }
+    .sync-pill.busy .sync-dot { animation: pulse 1s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{opacity:.3} 50%{opacity:1} }
+
+    #sync-banner {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 70;
+      transform: translateY(-110%); transition: transform .3s cubic-bezier(.4,0,.2,1), opacity .3s ease;
+      opacity: 0; pointer-events: none;
+    }
+    #sync-banner.active { transform: translateY(0); opacity: 1; pointer-events: auto; }
+    #sync-banner .bar-fill { height: 3px; background: linear-gradient(90deg, #22d3ee, #10b981); transition: width .3s ease; }
+    #sync-banner.failed .bar-fill { background: linear-gradient(90deg, #f43f5e, #f97316); }
+    #sync-banner.failed #sync-banner-icon { color: #fda4af !important; }
+    #sync-banner.failed #sync-banner-sub { color: #fda4af; }
+    #sync-banner.success .bar-fill { background: linear-gradient(90deg, #10b981, #22d3ee); }
+
+    .count-badge {
+      display: inline-flex; align-items: center; gap: .35rem;
+      font-family: 'Fira Code', monospace; font-size: 10px;
+      padding: .2rem .5rem; border-radius: .5rem;
+      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(2,6,23,.6);
+      transition: all .2s ease;
+      white-space: nowrap;
+    }
+    .count-badge.done { border-color: rgba(16,185,129,.5); color: #6ee7b7; }
+    .count-badge.pending { color: #94a3b8; }
+    .count-badge.partial { border-color: rgba(34,211,238,.5); color: #67e8f9; }
+    .count-badge.failed { border-color: rgba(244,63,94,.6); color: #fda4af; background: rgba(76,5,25,.5); }
+
+    .blink { animation: blink 1s ease-in-out infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.35} }
+
+    .full-menu-shell { width: 100vw; height: 100vh; max-width: none; max-height: none; border-radius: 0; }
+    @media (min-width: 768px) {
+      .full-menu-shell { width: 95vw; height: 95vh; border-radius: 1.5rem; }
+    }
+
+    .filament-card { display: flex; flex-direction: column; gap: .75rem; min-height: 100px; }
+    .filament-card .filament-name { word-break: break-word; overflow-wrap: anywhere; line-height: 1.25; flex: 1; min-width: 0; }
+    .filament-actions { display: flex; flex-wrap: wrap; gap: 2px; align-items: center; flex-shrink: 0; }
+    .filament-actions button { flex-shrink: 0; }
+
+    .pickup-message {
+      font-size: clamp(1.75rem, 5vw, 3.5rem);
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      line-height: 1.05;
+      background: linear-gradient(90deg, #22d3ee 0%, #10b981 50%, #06b6d4 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-align: center;
+      padding: .5rem 0;
+      animation: pickupGlow 3s ease-in-out infinite;
+    }
+    @keyframes pickupGlow {
+      0%,100% { filter: drop-shadow(0 0 8px rgba(34,211,238,.35)); }
+      50% { filter: drop-shadow(0 0 20px rgba(16,185,129,.55)); }
+    }
+    .pickup-card {
+      background: linear-gradient(135deg, rgba(6,182,212,.10), rgba(16,185,129,.10));
+      border: 1px solid rgba(34,211,238,.35);
+      border-radius: 1.5rem;
+      padding: 1.25rem 1rem;
+    }
+
+    .stage-select {
+      background: rgba(2,6,23,.7);
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: .5rem;
+      padding: .3rem .5rem;
+      font-family: 'Fira Code', monospace;
+      font-size: 10px;
+      color: #e2e8f0;
+      cursor: pointer;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .stage-select:focus { border-color: #06b6d4; }
+    .stage-select.s0 { border-color: rgba(148,163,184,.4); }
+    .stage-select.s1 { border-color: rgba(245,158,11,.5); color: #fcd34d; }
+    .stage-select.s2 { border-color: rgba(168,85,247,.5); color: #d8b4fe; }
+    .stage-select.s3 { border-color: rgba(16,185,129,.5); color: #6ee7b7; }
+
+    .cart-btn { position: relative; }
+    .cart-badge {
+      position: absolute; top: -6px; right: -6px;
+      min-width: 18px; height: 18px;
+      border-radius: 9999px;
+      background: linear-gradient(135deg, #06b6d4, #10b981);
+      color: #020617;
+      font-weight: 900;
+      font-size: 10px;
+      display: flex; align-items: center; justify-content: center;
+      padding: 0 4px;
+      box-shadow: 0 4px 10px rgba(6,182,212,.4);
+      font-family: 'Fira Code', monospace;
+    }
+    .cart-badge.empty { display: none; }
+
+    .new-badge {
+      position: absolute; top: 12px; right: 12px;
+      background: linear-gradient(135deg, #22d3ee, #10b981);
+      color: #020617;
+      font-size: 9px; font-weight: 900;
+      padding: 4px 8px;
+      border-radius: .5rem;
+      font-family: 'Fira Code', monospace;
+      z-index: 10;
+      letter-spacing: .05em;
+      box-shadow: 0 0 16px rgba(34,211,238,.55);
+      animation: newBadgePulse 2s ease-in-out infinite;
+    }
+    @keyframes newBadgePulse {
+      0%,100% { box-shadow: 0 0 16px rgba(34,211,238,.55); }
+      50% { box-shadow: 0 0 26px rgba(16,185,129,.75); }
+    }
+
+    .cart-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px;
+      background: rgba(15,23,42,.6);
+      border: 1px solid rgba(255,255,255,.06);
+      border-radius: 1rem;
+      transition: border-color .2s;
+    }
+    .cart-item:hover { border-color: rgba(34,211,238,.3); }
+    .cart-thumb {
+      width: 56px; height: 56px;
+      border-radius: .75rem;
+      background: #020617;
+      overflow: hidden;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid rgba(255,255,255,.06);
+    }
+    .cart-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .qty-btn {
+      width: 22px; height: 22px;
+      border-radius: .4rem;
+      background: rgba(15,23,42,.8);
+      border: 1px solid rgba(255,255,255,.1);
+      color: #cbd5e1;
+      font-size: 11px; font-weight: 900;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: all .15s;
+      font-family: 'Fira Code', monospace;
+    }
+    .qty-btn:hover { background: rgba(6,182,212,.2); border-color: rgba(6,182,212,.4); color: #fff; }
+
+    .cart-table { width: 100%; font-family: 'Fira Code', monospace; font-size: 11px; }
+    .cart-table th { text-align: left; padding: 8px; color: #64748b; text-transform: uppercase; font-size: 9px; letter-spacing: .05em; border-bottom: 1px solid rgba(255,255,255,.08); }
+    .cart-table td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,.04); }
+
+    #lightbox { position: fixed; inset: 0; z-index: 90; background: rgba(2,6,23,.95); backdrop-filter: blur(12px); display: none; align-items: center; justify-content: center; padding: 20px; cursor: zoom-out; }
+    #lightbox.active { display: flex; }
+    #lightbox img { max-width: 95vw; max-height: 90vh; object-fit: contain; border-radius: 1rem; box-shadow: 0 0 60px rgba(6,182,212,.3); }
+    #lightbox .close-hint { position: absolute; top: 20px; right: 20px; color: #cbd5e1; font-size: 12px; font-family: 'Fira Code', monospace; display: flex; align-items: center; gap: 8px; }
+    #lightbox .close-hint button { background: rgba(15,23,42,.9); border: 1px solid rgba(255,255,255,.1); padding: 8px 14px; border-radius: .75rem; color: #fff; cursor: pointer; }
+    #lightbox .close-hint button:hover { background: rgba(6,182,212,.2); border-color: rgba(6,182,212,.4); }
+
+    .buy-hero-img { width: 100%; height: 100%; object-fit: contain; background: #020617; }
+    .buy-hero-wrap { position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #020617; overflow: hidden; }
+
+    .order-items-table { width: 100%; font-family: 'Fira Code', monospace; font-size: 10px; margin-top: 6px; border-collapse: collapse; }
+    .order-items-table th { text-align: left; padding: 4px 6px; color: #64748b; font-size: 9px; border-bottom: 1px solid rgba(255,255,255,.06); }
+    .order-items-table td { padding: 4px 6px; border-bottom: 1px solid rgba(255,255,255,.03); }
+
+    .kings-pill {
+      display: inline-flex; align-items: center; gap: .4rem;
+      font-size: 10px; font-family: 'Fira Code', monospace;
+      padding: .3rem .7rem; border-radius: 9999px;
+      background: linear-gradient(135deg, rgba(34,211,238,.15), rgba(16,185,129,.15));
+      border: 1px solid rgba(34,211,238,.4);
+      color: #67e8f9;
+      font-weight: 700;
+      letter-spacing: .03em;
+      box-shadow: 0 0 20px rgba(34,211,238,.15);
+    }
+    .kings-pill i { color: #fcd34d; }
+  </style>
+</head>
+<body class="flex flex-col min-h-screen text-slate-100 antialiased selection:bg-cyan-500 selection:text-slate-950">
+
+  <!-- SYNC BANNER -->
+  <div id="sync-banner">
+    <div class="glass-panel border-b border-slate-800 shadow-2xl">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+          <div class="flex items-center gap-3 flex-shrink-0">
+            <div class="w-9 h-9 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
+              <i id="sync-banner-icon" class="fa-solid fa-arrows-rotate fa-spin"></i>
+            </div>
+            <div>
+              <p id="sync-banner-title" class="text-xs font-black font-mono uppercase tracking-wider text-white">Syncing Data</p>
+              <p id="sync-banner-sub" class="text-[10px] font-mono text-cyan-300">Syncing with the server...</p>
+            </div>
+          </div>
+
+          <div class="flex-1 min-w-0">
+            <div id="sync-counts" class="flex flex-wrap items-center gap-2">
+              <span class="count-badge pending" data-badge="models"><span data-arrow="models">↓</span> <i class="fa-solid fa-cube"></i> <span data-count="models">0/0</span> models</span>
+              <span class="count-badge pending" data-badge="filaments"><span data-arrow="filaments">↓</span> <i class="fa-solid fa-palette"></i> <span data-count="filaments">0/0</span> filaments</span>
+              <span class="count-badge pending" data-badge="orders"><span data-arrow="orders">↑</span> <i class="fa-solid fa-list-check"></i> <span data-count="orders">0/0</span> orders</span>
+            </div>
+            <div class="mt-2 w-full h-1.5 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+              <div id="sync-bar-fill" class="bar-fill" style="width:0%"></div>
+            </div>
+          </div>
+
+          <div class="flex-shrink-0 flex items-center gap-3">
+            <span id="sync-warning" class="text-sm font-black font-mono text-rose-400 blink">PLEASE DO NOT CLOSE THIS PAGE</span>
+            <span id="sync-percent" class="text-xs font-mono text-slate-400">0%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LIGHTBOX -->
+  <div id="lightbox" onclick="closeLightbox()">
+    <div class="close-hint">
+      <span>Click anywhere or press ESC to close</span>
+      <button onclick="event.stopPropagation(); closeLightbox();"><i class="fa-solid fa-xmark"></i> Close</button>
+    </div>
+    <img id="lightbox-img" src="" alt="" onclick="event.stopPropagation();" />
+  </div>
+
+  <!-- INITIAL BOOT LOADING -->
+  <div id="global-loading-screen" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-950/95 backdrop-blur-xl transition-opacity duration-300 hidden">
+    <div class="relative w-24 h-24 mb-6">
+      <div id="loading-spinner-ring" class="absolute inset-0 rounded-3xl border-4 border-cyan-500/20 animate-pulse"></div>
+      <div id="loading-spinner-spin" class="absolute inset-0 rounded-3xl border-4 border-cyan-400 border-t-transparent animate-spin"></div>
+      <div class="absolute inset-0 flex items-center justify-center text-cyan-400 text-2xl font-black">
+        <i id="loading-icon" class="fa-solid fa-cube animate-bounce"></i>
+      </div>
+    </div>
+    <div class="space-y-2 text-center max-w-md px-4">
+      <h2 id="loading-title" class="text-base font-black tracking-tight text-white font-mono uppercase">Loading Shop</h2>
+      <p id="loading-subtitle" class="text-xs text-slate-400 font-mono">Downloading latest from server...</p>
+      <div id="loading-bar-container" class="w-48 h-1.5 bg-slate-900 rounded-full mx-auto overflow-hidden border border-slate-800 mt-3">
+        <div id="loading-bar-fill" class="h-full bg-gradient-to-r from-cyan-500 to-emerald-500 transition-all duration-300 w-1/3"></div>
+      </div>
+      <div id="loading-error-box" class="hidden mt-4 p-4 rounded-2xl bg-rose-950/60 border border-rose-500/40 text-left font-mono text-xs space-y-2.5 shadow-2xl">
+        <div class="flex items-center justify-between border-b border-rose-500/30 pb-2">
+          <span class="text-rose-400 font-bold uppercase flex items-center gap-1.5"><i class="fa-solid fa-circle-xmark"></i> Connection Problem</span>
+          <span id="loading-error-code" class="text-[10px] bg-rose-900/80 text-rose-200 px-2 py-0.5 rounded border border-rose-500/30">CODE: ERR</span>
+        </div>
+        <div><span class="text-slate-400 text-[10px] block uppercase">Request:</span><span id="loading-error-request" class="text-cyan-300 text-xs font-bold break-all">—</span></div>
+        <div><span class="text-slate-400 text-[10px] block uppercase">Details:</span><p id="loading-error-desc" class="text-rose-300 text-[11px] leading-relaxed break-words">Unable to reach the shop server.</p></div>
+      </div>
+      <div id="loading-error-actions" class="hidden flex flex-wrap items-center justify-center gap-2 pt-3">
+        <button onclick="dismissLoadingErrorAndUseOffline()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-mono font-semibold transition flex items-center gap-1.5 shadow-md"><i class="fa-solid fa-wifi text-amber-400"></i> Continue Offline</button>
+        <button onclick="retryBackendConnection()" class="px-3.5 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-mono font-bold transition flex items-center gap-1.5 shadow-md"><i class="fa-solid fa-rotate-right"></i> Retry Connection</button>
+      </div>
+    </div>
+  </div>
+
+  <header class="sticky top-0 z-40 border-b border-slate-800/80 glass-panel">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16 sm:h-20">
+        <div class="flex items-center space-x-3 cursor-pointer" onclick="navigateTo('shop')">
+          <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-tr from-cyan-500 via-teal-500 to-emerald-500 p-0.5 shadow-lg shadow-cyan-500/20 flex items-center justify-center">
+            <div class="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center"><i class="fa-solid fa-cube text-cyan-400 text-lg sm:text-xl"></i></div>
+          </div>
+          <div>
+            <h1 class="text-base sm:text-lg font-black tracking-tight text-white flex items-center gap-2">
+              Josh and Jett's <span class="text-emerald-400 font-extrabold text-xs uppercase tracking-widest px-2 py-0.5 rounded-full bg-emerald-950/80 border border-emerald-500/30">3D Prints</span>
+            </h1>
+            <p class="text-[11px] text-cyan-300/80 hidden sm:block font-mono font-bold">Exclusive to King's Bangkok Students &amp; Teachers</p>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-1.5 sm:space-x-3">
+          <div id="sync-pill" class="sync-pill ok hidden sm:inline-flex" title="Sync status">
+            <span class="sync-dot"></span><span id="sync-pill-text">Synced</span>
+          </div>
+          <button onclick="customerSync()" id="sync-btn" class="px-2.5 py-2 rounded-xl text-xs font-semibold text-cyan-300 hover:text-cyan-200 hover:bg-cyan-950/40 border border-cyan-500/30 transition flex items-center gap-1.5" title="Sync my order & tracking">
+            <i class="fa-solid fa-arrows-rotate" id="sync-btn-icon"></i> <span class="hidden sm:inline">Sync</span>
+          </button>
+
+          <button onclick="openCartModal()" class="cart-btn px-3 py-2 rounded-xl text-xs font-semibold text-emerald-300 hover:text-emerald-200 hover:bg-emerald-950/40 border border-emerald-500/30 transition flex items-center gap-1.5" title="View cart">
+            <i class="fa-solid fa-cart-shopping"></i> <span class="hidden sm:inline">Cart</span>
+            <span id="cart-badge" class="cart-badge empty">0</span>
+          </button>
+
+          <button onclick="navigateTo('shop')" class="px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800/60 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-store text-cyan-400"></i> <span class="hidden xs:inline">Shop</span>
+          </button>
+          <button onclick="openQuickTrackModal()" class="px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800/60 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-magnifying-glass text-indigo-400"></i> <span>Track</span>
+          </button>
+          <button onclick="openOwnerPinModal()" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-amber-300 hover:text-amber-200 hover:bg-amber-950/40 border border-amber-500/30 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-key text-amber-400"></i> <span>Owner Portal</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none max-w-sm w-full"></div>
+
+  <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+
+    <section id="view-shop" class="space-y-6">
+      <div class="relative overflow-hidden rounded-3xl glass-panel p-6 sm:p-10 border border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="relative z-10 max-w-2xl space-y-3">
+          <span class="text-xs font-mono font-bold text-emerald-400 uppercase tracking-widest bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20 inline-block">
+            High Quality Filament Prints &amp; Custom Models
+          </span>
+          <h2 class="text-2xl sm:text-4xl font-black text-white tracking-tight">Bring Digital Designs into <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-emerald-400">Physical Reality</span></h2>
+          <p class="text-xs sm:text-sm text-slate-400 leading-relaxed">Select your favorite 3D models, customize scales and custom filament colors with instant localized pricing, and track production status.</p>
+          <div class="pt-2">
+            <span class="kings-pill"><i class="fa-solid fa-crown"></i> Exclusive to King's Bangkok Students &amp; Teachers</span>
+          </div>
+        </div>
+        <div class="relative z-10 glass-card p-4 sm:p-5 rounded-2xl border border-amber-500/30 bg-amber-950/20 max-w-xs space-y-1.5">
+          <div class="flex items-center gap-2 text-amber-400 font-bold text-xs uppercase font-mono"><i class="fa-solid fa-triangle-exclamation"></i> Important Notice</div>
+          <p class="text-[11px] text-slate-300 font-mono leading-relaxed">Note that there will be no electronics involved. There will just be plastic and physical toys and stuff.</p>
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div id="category-pills-container" class="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-2 sm:pb-0 no-scrollbar"></div>
+        <div class="relative w-full sm:w-64">
+          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+          <input type="text" id="shop-search-input" oninput="debounceRenderShopGrid()" placeholder="Search 3D models..." class="w-full bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition" />
+        </div>
+      </div>
+
+      <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+    </section>
+
+    <section id="view-tracking" class="hidden space-y-6">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+        <div>
+          <button onclick="navigateTo('shop')" class="text-xs text-slate-400 hover:text-cyan-400 transition flex items-center gap-1 font-mono mb-1">&larr; Back to Shop</button>
+          <h2 class="text-xl sm:text-2xl font-black text-white flex items-center gap-2"><i class="fa-solid fa-truck-fast text-cyan-400"></i> Live Order Tracker</h2>
+        </div>
+        <button onclick="copyTrackingNumber()" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-mono text-cyan-300 border border-slate-700 transition flex items-center gap-1.5 shadow-sm"><i class="fa-solid fa-copy"></i> Copy Code</button>
+      </div>
+      <div class="glass-panel rounded-3xl p-6 border border-slate-800 space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pb-6 border-b border-slate-800">
+          <div><span class="text-[11px] font-mono text-slate-500 block uppercase">Tracking Number</span><span id="track-number-display" class="text-lg font-mono font-black text-cyan-400">8A-----------</span></div>
+          <div><span class="text-[11px] font-mono text-slate-500 block uppercase">Product Item</span><span id="track-item-title" class="text-sm font-bold text-white">---</span></div>
+          <div><span class="text-[11px] font-mono text-slate-500 block uppercase">Specifications</span><span id="track-item-specs" class="text-xs font-mono text-cyan-300">---</span></div>
+        </div>
+        <div class="space-y-6 pt-2">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xs font-mono uppercase tracking-wider text-slate-400">Production &amp; Delivery Status</h3>
+            <span id="current-status-title" class="text-sm font-bold text-cyan-400">Order Received</span>
+          </div>
+          <div class="relative py-4">
+            <div class="absolute top-1/2 left-0 right-0 h-1.5 bg-slate-800 -translate-y-1/2 rounded-full"></div>
+            <div id="progress-bar-fill" class="absolute top-1/2 left-0 h-1.5 bg-cyan-500 -translate-y-1/2 rounded-full transition-all duration-500" style="width: 0%"></div>
+            <div class="relative flex justify-between">
+              <div class="flex flex-col items-center gap-2"><div id="node-blob-0" class="w-10 h-10 rounded-xl bg-slate-900 border-2 border-slate-700 flex items-center justify-center text-slate-500 text-xs font-bold transition-all">1</div><span class="text-[10px] font-mono text-slate-400 text-center">Received</span></div>
+              <div class="flex flex-col items-center gap-2"><div id="node-blob-1" class="w-10 h-10 rounded-xl bg-slate-900 border-2 border-slate-700 flex items-center justify-center text-slate-500 text-xs font-bold transition-all">2</div><span class="text-[10px] font-mono text-slate-400 text-center">Printing</span></div>
+              <div class="flex flex-col items-center gap-2"><div id="node-blob-2" class="w-10 h-10 rounded-xl bg-slate-900 border-2 border-slate-700 flex items-center justify-center text-slate-500 text-xs font-bold transition-all">3</div><span class="text-[10px] font-mono text-slate-400 text-center">Packaged</span></div>
+              <div class="flex flex-col items-center gap-2"><div id="node-blob-3" class="w-10 h-10 rounded-xl bg-slate-900 border-2 border-slate-700 flex items-center justify-center text-slate-500 text-xs font-bold transition-all">4</div><span class="text-[10px] font-mono text-slate-400 text-center">Delivered</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="track-items-wrap" class="pt-4 border-t border-slate-800 hidden">
+          <h4 class="text-xs font-mono text-slate-400 uppercase tracking-wider mb-3">Order Items</h4>
+          <div id="track-items-list" class="space-y-2 text-xs font-mono"></div>
+        </div>
+
+        <div id="pickup-message-wrap" class="hidden pt-4">
+          <div class="pickup-card">
+            <p class="text-[10px] font-mono uppercase tracking-widest text-cyan-300 text-center mb-2"><i class="fa-solid fa-location-dot"></i> Pickup Location</p>
+            <p class="pickup-message">Pick up at The Heart</p>
+            <p class="text-[10px] font-mono text-slate-400 text-center mt-2">Your order will be waiting for you!</p>
+          </div>
+        </div>
+
+        <div id="track-selected-options" class="pt-4 border-t border-slate-800 hidden">
+          <h4 class="text-xs font-mono text-slate-400 uppercase tracking-wider mb-3">Selected Options</h4>
+          <div id="track-selected-options-list" class="flex flex-wrap gap-2 text-xs font-mono"></div>
+        </div>
+        <div class="pt-4 border-t border-slate-800">
+          <h4 class="text-xs font-mono text-slate-400 uppercase tracking-wider mb-3">Live Log History</h4>
+          <ul id="audit-log-list" class="space-y-2 text-xs font-mono text-slate-300 bg-slate-950/60 p-4 rounded-2xl border border-slate-800 max-h-40 overflow-y-auto"><li>▶ Order initialization complete.</li></ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-owner" class="hidden space-y-8">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+        <div>
+          <span class="text-xs font-mono text-amber-400 uppercase tracking-widest bg-amber-500/10 px-3 py-0.5 rounded-full border border-amber-500/20 inline-block mb-1">Shop Owner Control Center</span>
+          <h2 class="text-2xl font-black text-white flex items-center gap-2"><i class="fa-solid fa-sliders text-amber-400"></i> Owner Portal Page</h2>
+        </div>
+        <div class="flex items-center gap-2 flex-wrap">
+          <button onclick="ownerSync()" class="px-4 py-2 rounded-xl bg-cyan-950/60 hover:bg-cyan-900/60 text-xs font-mono text-cyan-300 border border-cyan-500/30 transition flex items-center gap-1.5"><i class="fa-solid fa-cloud-arrow-up"></i> Owner Sync</button>
+          <button onclick="openWipeModal()" class="px-4 py-2 rounded-xl bg-rose-950/60 hover:bg-rose-900/60 text-xs font-mono text-rose-300 border border-rose-500/40 transition flex items-center gap-1.5"><i class="fa-solid fa-bomb"></i> Wipe &amp; Reset</button>
+          <button onclick="exitOwnerPortal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-mono text-slate-300 border border-slate-700 transition flex items-center gap-1.5"><i class="fa-solid fa-arrow-right-from-bracket"></i> Exit &amp; Lock</button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="glass-panel p-4 rounded-2xl border border-slate-800"><span class="text-[10px] font-mono text-slate-500 uppercase">Total Orders</span><p id="owner-stat-total" class="text-2xl font-black text-white mt-1">0</p></div>
+        <div class="glass-panel p-4 rounded-2xl border border-slate-800"><span class="text-[10px] font-mono text-amber-400 uppercase">Active Production</span><p id="owner-stat-active" class="text-2xl font-black text-amber-400 mt-1">0</p></div>
+        <div class="glass-panel p-4 rounded-2xl border border-slate-800"><span class="text-[10px] font-mono text-emerald-400 uppercase">Completed</span><p id="owner-stat-completed" class="text-2xl font-black text-emerald-400 mt-1">0</p></div>
+      </div>
+
+      <div class="glass-panel rounded-3xl p-6 border border-emerald-500/20 space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <h3 class="text-lg font-bold text-white flex items-center gap-2"><i class="fa-solid fa-cart-shopping text-emerald-400"></i> Active Cart (Local Session)</h3>
+          <span id="owner-cart-count" class="text-xs font-mono text-emerald-300">0 items</span>
+        </div>
+        <div id="owner-cart-table-container">
+          <p class="text-xs font-mono text-slate-500 text-center py-4">No items in cart.</p>
+        </div>
+      </div>
+
+      <div class="glass-panel rounded-3xl p-6 border border-slate-800 space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+          <div>
+            <h3 class="text-lg font-bold text-white flex items-center gap-2"><i class="fa-solid fa-palette text-amber-400"></i> Filament Inventory &amp; Stock Control</h3>
+            <p class="text-xs text-slate-400">Add, edit, remove, or re-arrange filament materials</p>
+          </div>
+          <button onclick="openAddFilamentModal()" class="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition flex items-center gap-1.5 shadow-md"><i class="fa-solid fa-plus"></i> Add New Filament</button>
+        </div>
+        <div id="owner-filaments-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"></div>
+      </div>
+
+      <div class="glass-panel rounded-3xl p-6 border border-slate-800 space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+          <div>
+            <h3 class="text-lg font-bold text-white flex items-center gap-2"><i class="fa-solid fa-boxes-stacked text-cyan-400"></i> Catalog Model Management</h3>
+            <p class="text-xs text-slate-400">Star models to show them in New Arrivals</p>
+          </div>
+          <button onclick="openAddModelModal()" class="px-3.5 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs transition flex items-center gap-1.5 shadow-md"><i class="fa-solid fa-plus"></i> Add New Model</button>
+        </div>
+        <div id="owner-catalog-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+      </div>
+
+      <div class="glass-panel rounded-3xl p-6 border border-slate-800 space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+          <div>
+            <h3 class="text-lg font-bold text-white flex items-center gap-2"><i class="fa-solid fa-list-check text-indigo-400"></i> Customer Orders &amp; Production Pipeline</h3>
+            <p class="text-xs text-slate-400">Pick a stage from the dropdown to update the order</p>
+          </div>
+          <div class="relative w-full sm:w-64">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+            <input type="text" id="owner-search-input" oninput="debounceRenderOwnerPortalOrders()" placeholder="Search orders..." class="w-full bg-slate-900 border border-slate-800 rounded-xl pl-8 pr-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition" />
+          </div>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs font-mono">
+            <thead class="bg-slate-950/80 text-slate-400 uppercase tracking-wider border-b border-slate-800">
+              <tr><th class="p-3">Tracking / Code</th><th class="p-3">Customer</th><th class="p-3">Order</th><th class="p-3">Stage</th><th class="p-3 text-right">Actions</th></tr>
+            </thead>
+            <tbody id="owner-orders-table-body" class="divide-y divide-slate-800/60"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="border-t border-slate-800/80 bg-slate-950/80 py-8 mt-12 text-center text-xs text-slate-500 font-mono">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="text-center sm:text-left space-y-1">
+        <p>&copy; 2026 Josh and Jett's 3D Prints. All rights reserved. (No Electronics Involved)</p>
+        <p class="text-[10px] text-cyan-300/80 font-bold"><i class="fa-solid fa-crown text-amber-400"></i> Exclusive to King's Bangkok Students &amp; Teachers</p>
+      </div>
+      <div class="flex items-center space-x-4">
+        <button onclick="openQuickTrackModal()" class="hover:text-cyan-400 transition">Track Order</button>
+        <button onclick="openOwnerPinModal()" class="hover:text-amber-400 transition">Owner Login</button>
+      </div>
+    </div>
+  </footer>
+
+  <!-- 1. Owner PIN Modal -->
+  <div id="modal-owner-pin" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md hidden p-4">
+    <div class="glass-panel rounded-3xl p-6 sm:p-8 max-w-sm w-full border border-amber-500/30 space-y-6 shadow-2xl relative">
+      <div class="text-center space-y-2">
+        <div class="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 mx-auto flex items-center justify-center text-amber-400 text-xl"><i class="fa-solid fa-shield-halved"></i></div>
+        <h3 class="text-lg font-black text-white">Owner Portal Page Access</h3>
+        <p class="text-xs text-slate-400">Enter security PIN to enter portal</p>
+      </div>
+      <div class="space-y-4">
+        <input type="password" id="owner-pin-input" maxlength="6" placeholder="••••" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-center text-xl font-mono tracking-widest text-white focus:outline-none focus:border-amber-500 transition" />
+        <div class="flex gap-2">
+          <button onclick="closeOwnerPinModal()" class="w-1/2 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-300 transition">Cancel</button>
+          <button onclick="verifyOwnerPin()" class="w-1/2 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold transition">Authorize</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 1b. WIPE Modal -->
+  <div id="modal-wipe" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 backdrop-blur-md hidden p-4">
+    <div class="glass-panel rounded-3xl p-6 sm:p-8 max-w-md w-full border border-rose-500/40 space-y-5 shadow-2xl">
+      <div class="text-center space-y-2">
+        <div class="w-14 h-14 rounded-2xl bg-rose-500/10 border border-rose-500/40 mx-auto flex items-center justify-center text-rose-400 text-2xl">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <h3 class="text-lg font-black text-white">Wipe All Data &amp; Reset</h3>
+        <p class="text-xs text-slate-400 font-mono leading-relaxed">This will <span class="text-rose-400 font-bold">delete all models, filaments, and orders</span> from Firebase and replace them with the factory default configs.</p>
+      </div>
+
+      <div class="bg-rose-950/40 border border-rose-500/30 rounded-2xl p-3 space-y-2">
+        <p class="text-[11px] font-mono text-rose-200">To confirm, type this sentence <strong>exactly</strong>:</p>
+        <p class="text-[11px] font-mono text-rose-300 bg-slate-950/60 rounded-lg px-3 py-2 select-all" id="wipe-confirm-phrase">i want to delete all my progress and restart from beginning!</p>
+      </div>
+
+      <div>
+        <input type="text" id="wipe-confirm-input" placeholder="Type the sentence above..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 text-xs font-mono text-white placeholder-slate-600 focus:outline-none focus:border-rose-500 transition" />
+      </div>
+
+      <div class="flex gap-2">
+        <button onclick="closeWipeModal()" class="w-1/2 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-300 transition">Cancel</button>
+        <button onclick="executeWipe()" class="w-1/2 py-3 rounded-xl bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white text-xs font-black uppercase tracking-wider transition shadow-lg shadow-rose-500/20 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-bomb"></i> Wipe &amp; Reset
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Quick Track Modal -->
+  <div id="modal-quick-track" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md hidden p-4">
+    <div class="glass-panel rounded-3xl p-6 sm:p-8 max-w-md w-full border border-cyan-500/30 space-y-6 shadow-2xl">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-bold text-white flex items-center gap-2"><i class="fa-solid fa-magnifying-glass text-cyan-400"></i> Track Order by Code</h3>
+        <button onclick="closeQuickTrackModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="space-y-4">
+        <div>
+          <label class="text-[11px] font-mono text-slate-400 block mb-1">Enter Tracking Number</label>
+          <input type="text" id="quick-track-input" placeholder="e.g. 8A7F9X2B" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs font-mono text-cyan-400 uppercase placeholder-slate-600 focus:outline-none focus:border-cyan-500" />
+        </div>
+        <button onclick="submitQuickTrack()" class="w-full py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-xs uppercase tracking-wider transition">View Live Order Status</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2b. CART MODAL -->
+  <div id="modal-cart" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 backdrop-blur-md hidden p-0 sm:p-4">
+    <div class="full-menu-shell glass-panel flex flex-col overflow-hidden border border-slate-800 shadow-2xl">
+      <div class="px-6 sm:px-8 py-4 border-b border-slate-800 flex items-center justify-between flex-shrink-0">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+            <i class="fa-solid fa-cart-shopping"></i>
+          </div>
+          <div>
+            <h3 class="text-base sm:text-lg font-black text-white">Your Cart</h3>
+            <p id="cart-subtitle" class="text-[10px] font-mono text-slate-400">0 items</p>
+          </div>
+        </div>
+        <button onclick="closeCartModal()" class="w-10 h-10 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-white transition flex items-center justify-center">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="flex-1 overflow-y-auto px-6 sm:px-8 py-6">
+        <div id="cart-items-container" class="space-y-3"></div>
+      </div>
+
+      <div class="px-6 sm:px-8 py-4 border-t border-slate-800 bg-slate-950/60 flex items-center justify-between gap-4 flex-shrink-0 flex-wrap">
+        <div>
+          <span class="text-[10px] font-mono text-slate-500 block">CART TOTAL</span>
+          <span id="cart-total" class="text-2xl font-black text-emerald-400">฿0</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="clearCart()" class="px-4 py-3 rounded-2xl bg-slate-800 hover:bg-rose-950/60 text-rose-300 border border-slate-700 hover:border-rose-500/40 text-xs font-black uppercase tracking-wider transition flex items-center gap-2">
+            <i class="fa-solid fa-trash-can"></i> <span class="hidden sm:inline">Clear</span>
+          </button>
+          <button onclick="checkoutCart()" id="checkout-btn" class="px-5 sm:px-8 py-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-slate-950 font-black text-xs uppercase tracking-wider transition shadow-lg shadow-cyan-500/20 flex items-center gap-2">
+            <i class="fa-solid fa-credit-card"></i> <span class="hidden sm:inline">Checkout as One Order</span><span class="sm:hidden">Checkout</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2c. CHECKOUT NAME MODAL -->
+  <div id="modal-checkout-name" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 backdrop-blur-md hidden p-4">
+    <div class="glass-panel rounded-3xl p-6 sm:p-8 max-w-md w-full border border-emerald-500/30 space-y-6 shadow-2xl">
+      <div class="text-center space-y-2">
+        <div class="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 mx-auto flex items-center justify-center text-emerald-400 text-2xl">
+          <i class="fa-solid fa-receipt"></i>
+        </div>
+        <h3 class="text-lg font-black text-white">Complete Your Order</h3>
+        <p class="text-xs text-slate-400 font-mono">Enter your name so we can prepare your pickup</p>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <label class="text-xs font-mono text-slate-400 block mb-1">Your Name <span class="text-rose-400">*</span></label>
+          <input type="text" id="checkout-name-input" placeholder="e.g. Alex Ranger" oninput="clearFieldError('checkout-name-input')"
+            class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 transition" />
+          <p id="error-checkout-name-input" class="field-error-msg hidden"><i class="fa-solid fa-circle-exclamation"></i> Please enter at least 2 characters</p>
+        </div>
+
+        <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 space-y-2">
+          <div class="flex items-center justify-between text-xs font-mono">
+            <span class="text-slate-400">Items in order</span>
+            <span id="checkout-summary-count" class="text-white font-bold">0</span>
+          </div>
+          <div class="flex items-center justify-between text-xs font-mono">
+            <span class="text-slate-400">Total price</span>
+            <span id="checkout-summary-total" class="text-emerald-400 font-black text-lg">฿0</span>
+          </div>
+        </div>
+
+        <div class="flex gap-2">
+          <button onclick="closeCheckoutNameModal()" class="w-1/2 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-300 transition">
+            Cancel
+          </button>
+          <button onclick="submitCheckoutName()" class="w-1/2 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-slate-950 text-xs font-black uppercase tracking-wider transition shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2">
+            <i class="fa-solid fa-check"></i> Confirm Order
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. PURCHASE MODAL -->
+  <div id="modal-purchase" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/95 backdrop-blur-md hidden p-0 sm:p-4">
+    <div class="full-menu-shell glass-panel flex flex-col md:flex-row overflow-hidden border border-slate-800 shadow-2xl">
+      <div class="md:w-2/5 w-full flex flex-col border-b md:border-b-0 md:border-r border-slate-800 bg-slate-950/40">
+        <div class="relative w-full flex-1 min-h-[200px] overflow-hidden bg-slate-900">
+          <div id="buy-hero-image-wrap" class="buy-hero-wrap">
+            <img id="buy-hero-image" src="" alt="" class="buy-hero-img" style="display:none;cursor:pointer;" onclick="openLightbox(this.src)" />
+            <div id="buy-hero-placeholder" class="img-placeholder" style="background:linear-gradient(135deg, rgba(6,182,212,.05), rgba(16,185,129,.05));"><i class="fa-solid fa-cube text-6xl text-cyan-400/40"></i></div>
+          </div>
+          <button onclick="closePurchaseModal()" class="absolute top-4 right-4 z-10 w-10 h-10 rounded-xl bg-slate-950/80 hover:bg-slate-900 border border-slate-700 text-slate-300 hover:text-white transition flex items-center justify-center backdrop-blur">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        <div class="p-6 space-y-3 border-t border-slate-800">
+          <div class="flex items-center gap-2">
+            <div id="buy-modal-icon-box" class="w-9 h-9 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 text-sm flex-shrink-0 overflow-hidden"><i class="fa-solid fa-cube"></i></div>
+            <span id="buy-modal-category" class="text-[10px] font-mono text-cyan-400 font-bold uppercase tracking-widest">—</span>
+          </div>
+          <h3 id="buy-modal-name" class="text-xl sm:text-2xl font-black text-white leading-tight">---</h3>
+          <p id="buy-modal-desc" class="text-xs text-slate-400 leading-relaxed line-clamp-3"></p>
+          <div class="pt-2">
+            <span class="text-[10px] font-mono text-slate-500 block">BASE PRICE</span>
+            <span id="buy-modal-base-price" class="text-2xl font-black text-cyan-400 font-mono">฿---</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="md:w-3/5 w-full flex flex-col overflow-hidden">
+        <div class="px-6 sm:px-8 pt-6 pb-4 border-b border-slate-800 flex items-center justify-between">
+          <h3 class="text-base sm:text-lg font-black text-white flex items-center gap-2"><i class="fa-solid fa-sliders text-cyan-400"></i> Configure &amp; Order</h3>
+          <button onclick="closePurchaseModal()" class="hidden sm:flex text-slate-400 hover:text-white text-xs font-mono items-center gap-1"><i class="fa-solid fa-xmark"></i> Close</button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto px-6 sm:px-8 py-6 space-y-6">
+          <div class="space-y-2">
+            <label class="text-xs font-mono text-slate-400 uppercase tracking-wider">Filament Material &amp; Color</label>
+            <div id="buy-filament-options" class="grid grid-cols-2 sm:grid-cols-3 gap-2"></div>
+          </div>
+
+          <div class="space-y-2">
+            <div class="flex justify-between text-xs font-mono">
+              <span class="text-slate-400 uppercase tracking-wider">Model Scale</span>
+              <span id="buy-scale-val" class="text-cyan-300 font-bold">100% (Standard)</span>
+            </div>
+            <input type="range" id="buy-scale-slider" min="50" max="250" step="25" value="100" oninput="updateBuyTotal()" class="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer" />
+            <div class="flex justify-between text-[10px] font-mono text-slate-600 px-0.5">
+              <span>50%</span><span>100%</span><span>150%</span><span>200%</span><span>250%</span>
+            </div>
+          </div>
+
+          <div id="buy-options-section" class="hidden space-y-4 pt-2 border-t border-slate-800">
+            <label class="text-xs font-mono text-slate-400 uppercase tracking-wider block">Customize Model Options</label>
+            <div id="buy-options-container" class="space-y-4"></div>
+          </div>
+
+          <div class="space-y-3 pt-2 border-t border-slate-800">
+            <div>
+              <label class="text-xs font-mono text-slate-400 block mb-1">Your Name / Handle <span class="text-rose-400">*</span></label>
+              <input type="text" id="buy-customer-name" placeholder="e.g. Alex Ranger" oninput="clearFieldError('buy-customer-name')" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-cyan-500 transition" />
+              <p id="error-buy-customer-name" class="field-error-msg hidden"><i class="fa-solid fa-circle-exclamation"></i> Name is required</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="px-6 sm:px-8 py-4 border-t border-slate-800 bg-slate-950/60 flex items-center justify-between gap-4 flex-shrink-0 flex-wrap">
+          <div>
+            <span class="text-[10px] font-mono text-slate-500 block">FINAL PRICE (EST.)</span>
+            <span id="buy-total-price" class="text-2xl font-black text-cyan-400">฿0</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="addCurrentConfigToCart()" class="px-4 sm:px-5 py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-emerald-500/30 text-xs font-black uppercase tracking-wider transition flex items-center gap-2">
+              <i class="fa-solid fa-cart-plus"></i> <span class="hidden sm:inline">Add to Cart</span><span class="sm:hidden">Cart</span>
+            </button>
+            <button onclick="confirmPurchaseOrder()" class="px-5 sm:px-6 py-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-slate-950 font-black text-xs uppercase tracking-wider transition shadow-lg shadow-cyan-500/20 flex items-center gap-2">
+              <i class="fa-solid fa-bolt"></i> <span class="hidden sm:inline">Buy Now</span><span class="sm:hidden">Buy</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Add/Edit Model Modal -->
+  <div id="modal-add-model" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md hidden p-4">
+    <div class="glass-panel rounded-3xl p-6 sm:p-8 max-w-2xl w-full border border-slate-800 space-y-6 shadow-2xl max-h-[92vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+        <h3 id="model-modal-title" class="text-base font-bold text-white flex items-center gap-2"><i class="fa-solid fa-plus text-cyan-400"></i> Add New 3D Print Model</h3>
+        <button onclick="closeAddModelModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="space-y-4 font-mono text-xs">
+        <input type="hidden" id="edit-model-id" value="" />
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="sm:col-span-2">
+            <label class="text-slate-400 block mb-1">Model Title</label>
+            <input type="text" id="new-model-title" placeholder="e.g. Crystal Dragon" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-cyan-500" />
+          </div>
+          <div>
+            <label class="text-slate-400 block mb-1">Category &amp; Tag</label>
+            <select id="new-model-category" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-cyan-500">
+              <option value="Articulated">🐉 Articulated Toys &amp; Creatures</option>
+              <option value="Tools">⚙️ Tools</option>
+              <option value="Miniatures">⚔️ Miniatures &amp; Figurines</option>
+              <option value="Mechanical">🔧 Mechanical Gears &amp; Boxes</option>
+              <option value="Toys">🧸 Children &amp; Play Toys</option>
+              <option value="Functional">🛠️ Functional Household Items</option>
+              <option value="Cosplay">🛡️ Cosplay &amp; Wearable Props</option>
+              <option value="Desk Decor">🪴 Desk Decor &amp; Planters</option>
+              <option value="Fidget">🌀 Fidget &amp; Sensory Toys</option>
+              <option value="Puzzles">🧩 Brain Teasers &amp; Puzzles</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-slate-400 block mb-1">Model Icon / Symbol</label>
+            <select id="new-model-icon" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-cyan-500">
+              <option value="fa-dragon">🐉 Dragon / Creature</option>
+              <option value="fa-sword">⚔️ Sword / Weapon</option>
+              <option value="fa-gear">⚙️ Gear / Mechanism</option>
+              <option value="fa-cube">🧊 Geometric / Cube</option>
+              <option value="fa-robot">🤖 Robot / Mech</option>
+              <option value="fa-puzzle-piece">🧩 Puzzle / Toy</option>
+              <option value="fa-shield">🛡️ Shield / Armor</option>
+              <option value="fa-ghost">👻 Ghost / Monster</option>
+              <option value="fa-fire">🔥 Flame / Magic</option>
+              <option value="fa-crown">👑 Crown / Royalty</option>
+              <option value="fa-cat">🐱 Animal / Pet</option>
+              <option value="fa-rocket">🚀 Space / Vehicle</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-slate-400 block mb-1">Base Price (฿)</label>
+            <input type="number" id="new-model-price" value="150" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-cyan-500" />
+          </div>
+          <div class="sm:col-span-2">
+            <label class="text-slate-400 block mb-1">Description</label>
+            <textarea id="new-model-desc" rows="2" placeholder="High detail 3D physical plastic print model..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-cyan-500"></textarea>
+          </div>
+          <div class="sm:col-span-2 flex items-center gap-3 bg-slate-900/60 border border-slate-800 rounded-xl px-3 py-2.5">
+            <input type="checkbox" id="new-model-new-arrival" class="w-4 h-4 accent-cyan-500" />
+            <label for="new-model-new-arrival" class="text-slate-300 flex items-center gap-2 cursor-pointer">
+              <i class="fa-solid fa-star text-amber-400"></i> Feature in <strong class="text-white">New Arrivals</strong>
+            </label>
+          </div>
+        </div>
+
+        <div class="pt-2 border-t border-slate-800">
+          <div class="flex items-center justify-between mb-2">
+            <label class="text-slate-400 block">Model Photo (optional)</label>
+            <span class="text-[10px] text-slate-500">Drag the image to reposition • Zoom with slider</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="sm:col-span-2">
+              <div id="crop-canvas" class="border border-slate-800">
+                <img id="crop-image" src="" alt="" style="display:none;" />
+                <div id="crop-grid"></div>
+                <div id="crop-border"></div>
+                <div id="crop-empty" class="img-placeholder absolute inset-0 flex flex-col gap-2 text-slate-500">
+                  <i class="fa-solid fa-image text-4xl"></i>
+                  <span class="text-[11px] font-mono">No image selected</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 mt-2">
+                <input type="file" id="new-model-image-file" accept="image/*" class="hidden" onchange="handleModelImageUpload(event)" />
+                <button type="button" onclick="document.getElementById('new-model-image-file').click()" class="flex-1 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-mono transition flex items-center justify-center gap-1.5">
+                  <i class="fa-solid fa-upload text-cyan-400"></i> Choose Image
+                </button>
+                <button type="button" onclick="clearModelImage()" class="px-3 py-2 rounded-xl bg-slate-800/60 hover:bg-rose-950/60 text-rose-300 border border-slate-700 hover:border-rose-500/40 text-xs font-mono transition">
+                  <i class="fa-solid fa-trash-can"></i>
+                </button>
+                <button type="button" onclick="resetCrop()" class="px-3 py-2 rounded-xl bg-slate-800/60 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-mono transition">
+                  <i class="fa-solid fa-arrows-to-dot"></i> Reset
+                </button>
+              </div>
+            </div>
+
+            <div class="space-y-3">
+              <div>
+                <label class="text-slate-400 block mb-1 text-[10px] uppercase tracking-wider">Zoom</label>
+                <input type="range" id="crop-zoom" min="100" max="300" step="5" value="100" oninput="onCropZoom(this.value)" class="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer" />
+                <span id="crop-zoom-label" class="text-[10px] text-cyan-300 font-mono">100%</span>
+              </div>
+              <div>
+                <label class="text-slate-400 block mb-1 text-[10px] uppercase tracking-wider">Card Format</label>
+                <select id="crop-aspect" onchange="onCropAspectChange(this.value)" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1.5 text-[11px] text-white focus:outline-none focus:border-cyan-500">
+                  <option value="4/3">Landscape 4:3</option>
+                  <option value="1/1">Square 1:1</option>
+                  <option value="16/9">Wide 16:9</option>
+                  <option value="3/4">Portrait 3:4</option>
+                </select>
+              </div>
+              <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-2.5 space-y-1">
+                <span class="text-[10px] text-slate-400 block uppercase">Preview</span>
+                <div id="crop-preview" class="w-full aspect-[4/3] rounded-lg overflow-hidden border border-slate-800 bg-slate-950 relative">
+                  <img id="crop-preview-img" src="" alt="" style="display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" />
+                  <div id="crop-preview-empty" class="w-full h-full flex items-center justify-center text-slate-600"><i class="fa-solid fa-image text-xl"></i></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <input type="hidden" id="new-model-image-data" value="" />
+        </div>
+
+        <div class="pt-2 border-t border-slate-800">
+          <div class="flex items-center justify-between mb-2">
+            <label class="text-slate-400 block">Custom Options (Optional)</label>
+            <button type="button" onclick="addOptionGroup()" class="px-2.5 py-1 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 text-[10px] font-bold transition"><i class="fa-solid fa-plus"></i> Add Group</button>
+          </div>
+          <p class="text-[10px] text-slate-500 mb-2">e.g. Group "Battery Holder" with choices "AAA", "AA", "None"</p>
+          <div id="options-builder" class="space-y-3"></div>
+        </div>
+
+        <button onclick="submitNewCatalogModel()" id="model-submit-btn" class="w-full py-3 mt-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black uppercase tracking-wider transition">Add Model to Catalog</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Add/Edit Filament Modal -->
+  <div id="modal-add-filament" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/95 backdrop-blur-md hidden p-0 sm:p-4">
+    <div class="full-menu-shell glass-panel flex flex-col md:flex-row overflow-hidden border border-slate-800 shadow-2xl">
+      <div class="md:w-2/5 w-full flex flex-col border-b md:border-b-0 md:border-r border-slate-800 bg-slate-950/40">
+        <div class="relative w-full flex-1 min-h-[200px] overflow-hidden flex items-center justify-center" style="background: radial-gradient(circle at 50% 30%, rgba(236,72,153,.15), transparent 60%);">
+          <div class="text-center space-y-4 p-6">
+            <div id="filament-preview-swatch" class="w-32 h-32 rounded-full mx-auto shadow-2xl border-4 border-slate-900 transition-all duration-200" style="background-color: #ec4899;"></div>
+            <div>
+              <h3 id="filament-preview-name" class="text-xl font-black text-white break-words px-2">Neon Pink PLA</h3>
+              <p id="filament-preview-desc" class="text-xs text-slate-400 font-mono mt-1 px-4">Filament description preview</p>
+            </div>
+            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-700">
+              <span class="text-[10px] font-mono text-slate-400 uppercase">Surcharge</span>
+              <span id="filament-preview-surcharge" class="text-sm font-black font-mono text-amber-400">+฿0</span>
+            </div>
+          </div>
+          <button onclick="closeAddFilamentModal()" class="absolute top-4 right-4 z-10 w-10 h-10 rounded-xl bg-slate-950/80 hover:bg-slate-900 border border-slate-700 text-slate-300 hover:text-white transition flex items-center justify-center backdrop-blur">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="md:w-3/5 w-full flex flex-col overflow-hidden">
+        <div class="px-6 sm:px-8 pt-6 pb-4 border-b border-slate-800 flex items-center justify-between">
+          <h3 id="filament-modal-title" class="text-base sm:text-lg font-black text-white flex items-center gap-2">
+            <i class="fa-solid fa-plus text-amber-400"></i> Add New Filament
+          </h3>
+          <button onclick="closeAddFilamentModal()" class="hidden sm:flex text-slate-400 hover:text-white text-xs font-mono items-center gap-1"><i class="fa-solid fa-xmark"></i> Close</button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto px-6 sm:px-8 py-6 space-y-5 font-mono text-xs">
+          <input type="hidden" id="edit-filament-id" value="" />
+
+          <div>
+            <label class="text-slate-400 block mb-1">Filament Name <span class="text-rose-400">*</span></label>
+            <input type="text" id="new-filament-name" placeholder="e.g. Neon Pink PLA" oninput="updateFilamentPreview()"
+              class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-amber-500" />
+          </div>
+
+          <div>
+            <label class="text-slate-400 block mb-1">Description (optional)</label>
+            <textarea id="new-filament-desc" rows="3" placeholder="e.g. Shiny silk finish with a smooth neon pink color." oninput="updateFilamentPreview()"
+              class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-amber-500"></textarea>
+          </div>
+
+          <div>
+            <label class="text-slate-400 block mb-2">Filament Color</label>
+            <div class="flex items-center gap-3 bg-slate-900/80 p-4 rounded-2xl border border-slate-800">
+              <input type="color" id="new-filament-color" value="#ec4899" oninput="updateFilamentPreview()" class="w-16 h-16 rounded-xl bg-slate-950 border border-slate-700 cursor-pointer p-1" />
+              <div class="space-y-1 flex-1">
+                <span class="text-white font-bold block">Color Wheel Picker</span>
+                <span class="text-[10px] text-slate-400">Click the swatch to open the picker</span>
+                <div class="flex gap-2 mt-2 flex-wrap">
+                  <button type="button" onclick="setFilamentColor('#ec4899')" class="w-6 h-6 rounded-lg border border-slate-700" style="background:#ec4899"></button>
+                  <button type="button" onclick="setFilamentColor('#06b6d4')" class="w-6 h-6 rounded-lg border border-slate-700" style="background:#06b6d4"></button>
+                  <button type="button" onclick="setFilamentColor('#10b981')" class="w-6 h-6 rounded-lg border border-slate-700" style="background:#10b981"></button>
+                  <button type="button" onclick="setFilamentColor('#f97316')" class="w-6 h-6 rounded-lg border border-slate-700" style="background:#f97316"></button>
+                  <button type="button" onclick="setFilamentColor('#eab308')" class="w-6 h-6 rounded-lg border border-slate-700" style="background:#eab308"></button>
+                  <button type="button" onclick="setFilamentColor('#a855f7')" class="w-6 h-6 rounded-lg border border-slate-700" style="background:#a855f7"></button>
+                  <button type="button" onclick="setFilamentColor('#ef4444')" class="w-6 h-6 rounded-lg border border-slate-700" style="background:#ef4444"></button>
+                  <button type="button" onclick="setFilamentColor('#ffffff')" class="w-6 h-6 rounded-lg border border-slate-700" style="background:#ffffff"></button>
+                  <button type="button" onclick="setFilamentColor('#334155')" class="w-6 h-6 rounded-lg border border-slate-700" style="background:#334155"></button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label class="text-slate-400 block mb-1">Price Surcharge (฿)</label>
+            <input type="number" id="new-filament-surcharge" value="0" min="0" oninput="updateFilamentPreview()"
+              class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-amber-500" />
+          </div>
+        </div>
+
+        <div class="px-6 sm:px-8 py-4 border-t border-slate-800 bg-slate-950/60 flex items-center justify-between gap-4 flex-shrink-0">
+          <button onclick="closeAddFilamentModal()" class="px-5 py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-black uppercase tracking-wider transition">Cancel</button>
+          <button onclick="submitNewFilament()" id="filament-submit-btn" class="px-6 sm:px-8 py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black text-xs uppercase tracking-wider transition shadow-lg shadow-amber-500/20 flex items-center gap-2">
+            <i class="fa-solid fa-palette"></i> <span id="filament-submit-label">Add Filament</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ============================================================
+    // GLOBAL STATE
+    // ============================================================
+    let catalogModels = [];
+    let filaments = [];
+    let orders = [];
+    let cart = [];
+    let catalogMap = new Map(), filamentMap = new Map(), orderMap = new Map();
+
+    let searchDebounceTimer = null, ownerSearchDebounceTimer = null;
+    let currentCategory = 'All';
+    let activeView = 'shop';
+    let activeTrackingCode = null;
+    let currentConfiguredModel = null;
+    let selectedFilamentId = null;
+    let selectedOptions = {};
+
+    let fbReady = false;
+    let firebase = null;
+
+    let syncState = {
+      active: false,
+      counts: {
+        models:    { done: 0, total: 0, failed: 0, dir: 'pull' },
+        filaments: { done: 0, total: 0, failed: 0, dir: 'pull' },
+        orders:    { done: 0, total: 0, failed: 0, dir: 'push' }
+      }
+    };
+
+    // Listen for the firebase-ready event from the module script
+    window.addEventListener('firebase-ready', function() {
+      fbReady = true;
+      firebase = window.__fb;
+      // Kick off the boot sequence
+      initBackend();
+    });
+
+    // Fallback: if the module loads before this listener attaches, poll for it
+    (function pollForFirebase() {
+      if (window.__fb && window.__fb.ready && !fbReady) {
+        fbReady = true;
+        firebase = window.__fb;
+        initBackend();
+        return;
+      }
+      if (!fbReady) setTimeout(pollForFirebase, 50);
+    })();
+
+    // ============================================================
+    // FIREBASE HELPERS
+    // ============================================================
+    const COL_MODELS = 'catalog_models';
+    const COL_FILAMENTS = 'filaments';
+    const COL_ORDERS = 'orders';
+
+    // Read all docs from a collection (fast — single round trip)
+    async function readCollection(name) {
+      const snap = await firebase.getDocs(firebase.collection(firebase.db, name));
+      const out = [];
+      snap.forEach(d => out.push(d.data()));
+      return out;
+    }
+
+    // Write a single doc
+    async function writeDoc(colName, id, payload) {
+      await firebase.setDoc(firebase.doc(firebase.db, colName, String(id)), payload);
+    }
+
+    // Delete a single doc
+    async function deleteDocById(colName, id) {
+      await firebase.deleteDoc(firebase.doc(firebase.db, colName, String(id)));
+    }
+
+    // Bulk write via writeBatch (up to 500 ops per batch — splits automatically)
+    async function bulkWrite(colName, items, getIdFn) {
+      const chunks = [];
+      for (let i = 0; i < items.length; i += 400) chunks.push(items.slice(i, i + 400));
+      for (const chunk of chunks) {
+        const batch = firebase.writeBatch(firebase.db);
+        for (const item of chunk) {
+          const id = String(getIdFn(item));
+          batch.set(firebase.doc(firebase.db, colName, id), item);
+        }
+        await batch.commit();
+      }
+    }
+
+    // Bulk delete
+    async function bulkDelete(colName, ids) {
+      const chunks = [];
+      for (let i = 0; i < ids.length; i += 400) chunks.push(ids.slice(i, i + 400));
+      for (const chunk of chunks) {
+        const batch = firebase.writeBatch(firebase.db);
+        for (const id of chunk) {
+          batch.delete(firebase.doc(firebase.db, colName, String(id)));
+        }
+        await batch.commit();
+      }
+    }
+
+    // ============================================================
+    // SYNC BANNER
+    // ============================================================
+    window.flashBanner = function() {};
+
+    function showSyncBanner(title, subtitle) {
+      const b = document.getElementById('sync-banner');
+      b.classList.remove('failed', 'success', 'flash');
+      b.classList.add('active');
+      document.getElementById('sync-banner-title').innerText = title || 'Syncing Data';
+      document.getElementById('sync-banner-sub').innerText = subtitle || 'Syncing with the server...';
+      document.getElementById('sync-banner-icon').className = 'fa-solid fa-arrows-rotate fa-spin';
+      document.getElementById('sync-warning').style.display = '';
+      syncState.active = true;
+    }
+    function hideSyncBanner() {
+      const b = document.getElementById('sync-banner');
+      b.classList.remove('active');
+      syncState.active = false;
+    }
+    function setSyncCounts(category, done, total, failed, dir) {
+      if (syncState.counts[category]) {
+        syncState.counts[category].done = done;
+        syncState.counts[category].total = total;
+        syncState.counts[category].failed = failed || 0;
+        if (dir) syncState.counts[category].dir = dir;
+      }
+      renderSyncCounts();
+    }
+    function renderSyncCounts() {
+      let totalDone = 0, totalAll = 0, totalFailed = 0;
+      ['models', 'filaments', 'orders'].forEach(c => {
+        const st = syncState.counts[c];
+        totalDone += st.done;
+        totalAll += st.total;
+        totalFailed += st.failed;
+        const badge = document.querySelector('[data-badge="' + c + '"]');
+        const span = document.querySelector('[data-count="' + c + '"]');
+        const arrow = document.querySelector('[data-arrow="' + c + '"]');
+        if (badge && span) {
+          span.innerText = st.done + '/' + st.total + (st.failed > 0 ? ' (' + st.failed + ' failed)' : '');
+          badge.classList.remove('done', 'pending', 'partial', 'failed');
+          if (st.failed > 0) badge.classList.add('failed');
+          else if (st.total > 0 && st.done === st.total) badge.classList.add('done');
+          else if (st.done > 0) badge.classList.add('partial');
+          else badge.classList.add('pending');
+        }
+        if (arrow) {
+          arrow.innerText = st.dir === 'pull' ? '↓' : '↑';
+          arrow.title = st.dir === 'pull' ? 'Downloading' : 'Uploading';
+        }
+      });
+      const pct = totalAll === 0 ? 0 : Math.round((totalDone / totalAll) * 100);
+      document.getElementById('sync-bar-fill').style.width = pct + '%';
+      document.getElementById('sync-percent').innerText = pct + '%';
+      return { totalDone, totalAll, totalFailed };
+    }
+    function finalizeSyncBanner(success, failedCount, customTitle) {
+      const b = document.getElementById('sync-banner');
+      const sub = document.getElementById('sync-banner-sub');
+      const title = document.getElementById('sync-banner-title');
+      const icon = document.getElementById('sync-banner-icon');
+      const warn = document.getElementById('sync-warning');
+      if (success) {
+        b.classList.add('success');
+        icon.className = 'fa-solid fa-circle-check';
+        title.innerText = customTitle || 'Sync Complete';
+        sub.innerText = 'All data saved and verified on the server.';
+        warn.style.display = 'none';
+      } else {
+        b.classList.add('failed');
+        icon.className = 'fa-solid fa-triangle-exclamation';
+        title.innerText = 'Sync Failed';
+        sub.innerText = failedCount + ' item(s) could not be verified after 3 retries.';
+        warn.style.display = 'none';
+      }
+      setTimeout(() => { hideSyncBanner(); }, success ? 2500 : 6000);
+    }
+
+    // ============================================================
+    // DATA MAPPING (Firebase stores as-is; we just normalize on read)
+    // ============================================================
+    function safeParse(s, fb) { try { return JSON.parse(s); } catch(e) { return fb; } }
+    function defaultCrop() { return { x: 50, y: 50, zoom: 100, aspect: '4/3' }; }
+
+    function normalizeModel(row) {
+      return {
+        id: row.id, title: row.title || '', category: row.category || 'Articulated',
+        icon: row.icon || 'fa-cube',
+        price: Number(row.price || 0),
+        desc: row.desc || '',
+        imageUrl: row.imageUrl || '',
+        imageCrop: (row.imageCrop && typeof row.imageCrop === 'object') ? row.imageCrop : defaultCrop(),
+        options: Array.isArray(row.options) ? row.options : [],
+        newArrival: row.newArrival === true
+      };
+    }
+    function normalizeFilament(row) {
+      return {
+        id: row.id, name: row.name || '', color: row.color || '#06b6d4',
+        surcharge: Number(row.surcharge || 0),
+        description: row.description || '',
+        inStock: row.inStock !== false,
+        sortOrder: Number(row.sortOrder || 0)
+      };
+    }
+    function normalizeOrder(row) {
+      return {
+        trackingCode: row.trackingCode, customerName: row.customerName || '',
+        modelTitle: row.modelTitle || '', modelIcon: row.modelIcon || 'fa-cube',
+        specs: row.specs || '', printerName: row.printerName || '',
+        stage: Number(row.stage || 0),
+        logs: Array.isArray(row.logs) ? row.logs : [],
+        selectedOptions: row.selectedOptions || {},
+        items: Array.isArray(row.items) ? row.items : [],
+        createdAt: row.createdAt || ''
+      };
+    }
+
+    function rebuildMaps() {
+      catalogMap.clear(); catalogModels.forEach(m => catalogMap.set(m.id, m));
+      filamentMap.clear(); filaments.forEach(f => filamentMap.set(f.id, f));
+      orderMap.clear(); orders.forEach(o => orderMap.set(o.trackingCode, o));
+    }
+
+    // ============================================================
+    // DEFAULT DATA
+    // ============================================================
+    function getDefaultModels() {
+      return [
+        { id: 'mod-1', title: 'Articulated Crystal Dragon', category: 'Articulated', icon: 'fa-dragon', price: 250, desc: 'Fully flexible print-in-place crystal dragon with beautiful segmented joints.', imageUrl: '', imageCrop: defaultCrop(), options: [], newArrival: true },
+        { id: 'mod-2', title: 'Modular Gear Fidget Spinner', category: 'Fidget', icon: 'fa-gear', price: 120, desc: 'Satisfying mechanical interlocking print with smooth counter-rotational gears.', imageUrl: '', imageCrop: defaultCrop(), options: [], newArrival: false },
+        { id: 'mod-3', title: 'Self-Watering Planter Pot', category: 'Desk Decor', icon: 'fa-cube', price: 180, desc: 'Two-piece planter with internal reservoir wick system for low maintenance desk plants.', imageUrl: '', imageCrop: defaultCrop(), options: [], newArrival: false },
+        { id: 'mod-4', title: 'Mechanical Screw Organizer', category: 'Tools', icon: 'fa-box', price: 210, desc: 'Precision threaded cylindrical storage box for hardware fasteners and tiny items.', imageUrl: '', imageCrop: defaultCrop(), options: [], newArrival: true }
+      ];
+    }
+    function getDefaultFilaments() {
+      return [
+        { id: 'neon-cyan', name: 'Silk Neon Cyan PLA', color: '#06b6d4', surcharge: 0, description: 'Shiny silk finish with a bright neon cyan color.', inStock: true, sortOrder: 0 },
+        { id: 'emerald-green', name: 'Emerald Green PLA', color: '#10b981', surcharge: 10, description: 'Rich emerald green with a matte finish.', inStock: true, sortOrder: 1 },
+        { id: 'galaxy-black', name: 'Galaxy Glitter Black', color: '#334155', surcharge: 15, description: 'Deep black with sparkly glitter flecks.', inStock: true, sortOrder: 2 },
+        { id: 'sunset-orange', name: 'Sunset Matte Orange', color: '#f97316', surcharge: 5, description: 'Warm sunset orange with a soft matte surface.', inStock: true, sortOrder: 3 }
+      ];
+    }
+    function getDefaultOrders() {
+      return [{
+        trackingCode: '8A7F9X2B', customerName: 'Josh Maker',
+        modelTitle: 'Articulated Crystal Dragon', modelIcon: 'fa-dragon',
+        specs: 'Silk Neon Cyan PLA | 100% Scale (฿250)', printerName: 'Bambu Lab A2L',
+        stage: 1, logs: ['▶ Order created.', '▶ Material loaded: Silk Neon Cyan PLA.', '▶ First layer calibration complete.'],
+        selectedOptions: {}, items: [], createdAt: new Date().toISOString().replace('T', ' ').substring(0, 16)
+      }];
+    }
+
+    function loadDefaultInMemoryData() {
+      catalogModels = getDefaultModels();
+      filaments = getDefaultFilaments();
+      orders = getDefaultOrders();
+      selectedFilamentId = filaments[0] ? filaments[0].id : null;
+      rebuildMaps();
+    }
+
+    // ============================================================
+    // BACKEND BOOT
+    // ============================================================
+    async function initBackend() {
+      showLoading('Loading Shop', 'Connecting to Firebase...');
+      setSyncPill('busy', 'Connecting');
+
+      try {
+        if (!firebase || !firebase.db) throw new Error('Firebase not initialized');
+
+        // Fast parallel reads
+        const [modelsRaw, filamentsRaw, ordersRaw] = await Promise.all([
+          readCollection(COL_MODELS),
+          readCollection(COL_FILAMENTS),
+          readCollection(COL_ORDERS)
+        ]);
+
+        if (modelsRaw.length > 0) {
+          catalogModels = modelsRaw.map(normalizeModel);
+        } else {
+          // Seed defaults
+          loadDefaultInMemoryData();
+          await bulkWrite(COL_MODELS, catalogModels.map(m => ({ ...m })), m => m.id);
+        }
+
+        if (filamentsRaw.length > 0) {
+          filaments = filamentsRaw.map(normalizeFilament).sort((a, b) => (a.sortOrder - b.sortOrder) || a.name.localeCompare(b.name));
+        } else {
+          if (filaments.length === 0) loadDefaultInMemoryData();
+          await bulkWrite(COL_FILAMENTS, filaments.map(f => ({ ...f })), f => f.id);
+        }
+
+        if (ordersRaw.length > 0) {
+          orders = ordersRaw.map(normalizeOrder);
+        }
+
+        if (!selectedFilamentId && filaments.length > 0) selectedFilamentId = filaments[0].id;
+        rebuildMaps();
+        renderCategoryPills();
+        renderShopGrid();
+        hideLoading();
+        handleHashNavigation();
+        setSyncPill('ok', 'Synced');
+
+        // Set up realtime listeners
+        setupRealtimeListeners();
+
+      } catch (err) {
+        setSyncPill('err', 'Error');
+        showLoadingError('Firebase', 'INIT_FAILED', err.message || 'Failed to connect to Firebase.');
+      }
+    }
+
+    // Realtime listeners — Firebase pushes updates instantly, no polling
+    function setupRealtimeListeners() {
+      try {
+        firebase.onSnapshot(firebase.collection(firebase.db, COL_MODELS), (snap) => {
+          const arr = []; snap.forEach(d => arr.push(d.data()));
+          catalogModels = arr.map(normalizeModel);
+          rebuildMaps();
+          renderCategoryPills();
+          renderShopGrid();
+          if (activeView === 'owner') renderOwnerCatalog();
+        });
+
+        firebase.onSnapshot(firebase.collection(firebase.db, COL_FILAMENTS), (snap) => {
+          const arr = []; snap.forEach(d => arr.push(d.data()));
+          filaments = arr.map(normalizeFilament).sort((a, b) => (a.sortOrder - b.sortOrder) || a.name.localeCompare(b.name));
+          rebuildMaps();
+          if (activeView === 'owner') renderOwnerFilaments();
+          if (!selectedFilamentId && filaments.length > 0) selectedFilamentId = filaments[0].id;
+        });
+
+        firebase.onSnapshot(firebase.collection(firebase.db, COL_ORDERS), (snap) => {
+          const arr = []; snap.forEach(d => arr.push(d.data()));
+          orders = arr.map(normalizeOrder);
+          rebuildMaps();
+          if (activeView === 'owner') renderOwnerPortal();
+          if (activeView === 'tracking' && activeTrackingCode) viewOrderTracking(activeTrackingCode, false);
+        });
+      } catch (e) { console.warn('Realtime listener setup failed:', e); }
+    }
+
+    window.retryBackendConnection = function() { initBackend(); };
+
+    // ============================================================
+    // SYNC FUNCTIONS
+    // ============================================================
+
+    // CUSTOMER SYNC — download all, upload only MY orders
+    window.customerSync = async function() {
+      if (!firebase || !firebase.db) { showToast('Offline — cannot sync.', 'error'); return; }
+      if (syncState.active) { showToast('Sync already in progress...'); return; }
+
+      setSyncPill('busy', 'Syncing');
+      showSyncBanner('Syncing My Order', 'Uploading my orders & downloading latest shop data...');
+
+      syncState.counts = {
+        models:    { done: 0, total: 0, failed: 0, dir: 'pull' },
+        filaments: { done: 0, total: 0, failed: 0, dir: 'pull' },
+        orders:    { done: 0, total: 0, failed: 0, dir: 'push' }
+      };
+      renderSyncCounts();
+      let totalFailed = 0;
+
+      try {
+        const arr = await readCollection(COL_MODELS);
+        catalogModels = arr.map(normalizeModel);
+        setSyncCounts('models', arr.length, arr.length, 0, 'pull');
+      } catch (e) { syncState.counts.models.failed = 1; totalFailed++; setSyncCounts('models', 0, 1, 1, 'pull'); }
+
+      try {
+        const arr = await readCollection(COL_FILAMENTS);
+        filaments = arr.map(normalizeFilament).sort((a, b) => (a.sortOrder - b.sortOrder) || a.name.localeCompare(b.name));
+        setSyncCounts('filaments', arr.length, arr.length, 0, 'pull');
+      } catch (e) { syncState.counts.filaments.failed = 1; totalFailed++; setSyncCounts('filaments', 0, 1, 1, 'pull'); }
+
+      // Only push MY orders
+      let mySet = new Set();
+      try { mySet = new Set(JSON.parse(localStorage.getItem('jj_my_orders_v1') || '[]')); } catch(e) {}
+      const myOrdersList = orders.filter(o => mySet.has(o.trackingCode));
+
+      syncState.counts.orders.total = myOrdersList.length;
+      renderSyncCounts();
+
+      for (let i = 0; i < myOrdersList.length; i++) {
+        try {
+          await writeDoc(COL_ORDERS, myOrdersList[i].trackingCode, myOrdersList[i]);
+          setSyncCounts('orders', i + 1, myOrdersList.length, syncState.counts.orders.failed, 'push');
+        } catch (e) { syncState.counts.orders.failed++; totalFailed++; setSyncCounts('orders', i + 1, myOrdersList.length, syncState.counts.orders.failed, 'push'); }
+      }
+
+      rebuildMaps(); renderCategoryPills(); renderShopGrid();
+      if (activeView === 'owner') renderOwnerPortal();
+      if (activeView === 'tracking' && activeTrackingCode) viewOrderTracking(activeTrackingCode, false);
+
+      if (totalFailed === 0) { setSyncPill('ok', 'Synced'); finalizeSyncBanner(true, 0, 'Order Synced'); }
+      else { setSyncPill('failed', totalFailed + ' failed'); finalizeSyncBanner(false, totalFailed); showToast(totalFailed + ' item(s) failed to sync.', 'error'); }
+    };
+
+    // OWNER SYNC — full push using batched writes
+    window.ownerSync = async function() {
+      if (!firebase || !firebase.db) { showToast('Offline — cannot sync.', 'error'); return; }
+      if (syncState.active) { showToast('Sync already in progress...'); return; }
+
+      setSyncPill('busy', 'Syncing');
+      showSyncBanner('Owner Sync', 'Pushing catalog, filaments & orders...');
+
+      syncState.counts = {
+        models:    { done: 0, total: catalogModels.length, failed: 0, dir: 'push' },
+        filaments: { done: 0, total: filaments.length, failed: 0, dir: 'push' },
+        orders:    { done: 0, total: orders.length, failed: 0, dir: 'push' }
+      };
+      renderSyncCounts();
+      let totalFailed = 0;
+
+      try {
+        await bulkWrite(COL_MODELS, catalogModels.map(m => ({ ...m })), m => m.id);
+        setSyncCounts('models', catalogModels.length, catalogModels.length, 0, 'push');
+      } catch (e) { syncState.counts.models.failed = catalogModels.length || 1; totalFailed++; setSyncCounts('models', 0, catalogModels.length, syncState.counts.models.failed, 'push'); }
+
+      try {
+        await bulkWrite(COL_FILAMENTS, filaments.map(f => ({ ...f })), f => f.id);
+        setSyncCounts('filaments', filaments.length, filaments.length, 0, 'push');
+      } catch (e) { syncState.counts.filaments.failed = filaments.length || 1; totalFailed++; setSyncCounts('filaments', 0, filaments.length, syncState.counts.filaments.failed, 'push'); }
+
+      try {
+        await bulkWrite(COL_ORDERS, orders.map(o => ({ ...o })), o => o.trackingCode);
+        setSyncCounts('orders', orders.length, orders.length, 0, 'push');
+      } catch (e) { syncState.counts.orders.failed = orders.length || 1; totalFailed++; setSyncCounts('orders', 0, orders.length, syncState.counts.orders.failed, 'push'); }
+
+      if (totalFailed === 0) { setSyncPill('ok', 'Synced'); finalizeSyncBanner(true, 0, 'Owner Sync Complete'); showToast('Owner sync complete!'); }
+      else { setSyncPill('failed', totalFailed + ' failed'); finalizeSyncBanner(false, totalFailed); showToast(totalFailed + ' item(s) failed to sync.', 'error'); }
+    };
+
+    // DB write helpers
+    window.saveModelToDb = async function(model) {
+      if (!firebase || !firebase.db) return;
+      try { await writeDoc(COL_MODELS, model.id, { ...model }); } catch (e) { console.warn('Save model failed:', e); }
+    };
+    window.removeModelFromDb = async function(id) {
+      if (!firebase || !firebase.db) return;
+      try { await deleteDocById(COL_MODELS, id); } catch (e) { console.warn('Delete model failed:', e); }
+    };
+    window.saveFilamentToDb = async function(filament) {
+      if (!firebase || !firebase.db) return;
+      try { await writeDoc(COL_FILAMENTS, filament.id, { ...filament }); } catch (e) { console.warn('Save filament failed:', e); }
+    };
+    window.removeFilamentFromDb = async function(id) {
+      if (!firebase || !firebase.db) return;
+      try { await deleteDocById(COL_FILAMENTS, id); } catch (e) { console.warn('Delete filament failed:', e); }
+    };
+    window.saveOrderToDb = async function(order) {
+      if (!firebase || !firebase.db) return;
+      try { await writeDoc(COL_ORDERS, order.trackingCode, { ...order }); } catch (e) { console.warn('Save order failed:', e); }
+    };
+    window.removeOrderFromDb = async function(code) {
+      if (!firebase || !firebase.db) return;
+      try { await deleteDocById(COL_ORDERS, code); } catch (e) { console.warn('Delete order failed:', e); }
+    };
+
+    // ============================================================
+    // WIPE & RESET
+    // ============================================================
+    window.openWipeModal = function() {
+      document.getElementById('wipe-confirm-input').value = '';
+      document.getElementById('modal-wipe').classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+      setTimeout(() => document.getElementById('wipe-confirm-input').focus(), 100);
+    };
+    window.closeWipeModal = function() {
+      document.getElementById('modal-wipe').classList.add('hidden');
+      document.body.style.overflow = '';
+    };
+    window.executeWipe = async function() {
+      const typed = document.getElementById('wipe-confirm-input').value.trim();
+      const phrase = 'i want to delete all my progress and restart from beginning!';
+      if (typed !== phrase) {
+        showToast('Text does not match exactly. Please type it exactly as shown.', 'error');
+        return;
+      }
+      if (!firebase || !firebase.db) { showToast('Firebase not ready.', 'error'); return; }
+
+      closeWipeModal();
+      showSyncBanner('Wiping Everything', 'Deleting all models, filaments & orders...');
+      syncState.active = true;
+
+      try {
+        // Get all IDs
+        const [modelsSnap, filamentsSnap, ordersSnap] = await Promise.all([
+          firebase.getDocs(firebase.collection(firebase.db, COL_MODELS)),
+          firebase.getDocs(firebase.collection(firebase.db, COL_FILAMENTS)),
+          firebase.getDocs(firebase.collection(firebase.db, COL_ORDERS))
+        ]);
+        const modelIds = []; modelsSnap.forEach(d => modelIds.push(d.id));
+        const filamentIds = []; filamentsSnap.forEach(d => filamentIds.push(d.id));
+        const orderIds = []; ordersSnap.forEach(d => orderIds.push(d.id));
+
+        await Promise.all([
+          bulkDelete(COL_MODELS, modelIds),
+          bulkDelete(COL_FILAMENTS, filamentIds),
+          bulkDelete(COL_ORDERS, orderIds)
+        ]);
+
+        // Upload defaults
+        const defaultModels = getDefaultModels();
+        const defaultFilaments = getDefaultFilaments();
+        const defaultOrders = getDefaultOrders();
+
+        await bulkWrite(COL_MODELS, defaultModels, m => m.id);
+        await bulkWrite(COL_FILAMENTS, defaultFilaments, f => f.id);
+        await bulkWrite(COL_ORDERS, defaultOrders, o => o.trackingCode);
+
+        // Update local state
+        catalogModels = defaultModels;
+        filaments = defaultFilaments;
+        orders = defaultOrders;
+        cart = [];
+        saveCart();
+        updateCartBadge();
+        localStorage.removeItem('jj_my_orders_v1');
+        selectedFilamentId = filaments[0] ? filaments[0].id : null;
+        rebuildMaps();
+        renderCategoryPills();
+        renderShopGrid();
+        if (activeView === 'owner') renderOwnerPortal();
+
+        finalizeSyncBanner(true, 0, 'Wipe & Reset Complete');
+        showToast('All data wiped and reset to defaults!');
+      } catch (e) {
+        finalizeSyncBanner(false, 1);
+        showToast('Wipe failed: ' + e.message, 'error');
+      }
+    };
+
+    // ============================================================
+    // UI HELPERS
+    // ============================================================
+    window.showToast = function(message, type = 'success') {
+      const c = document.getElementById('toast-container'); if (!c) return;
+      const t = document.createElement('div');
+      const bg = type === 'success' ? 'bg-cyan-950/95 border-cyan-500/40 text-cyan-300' : 'bg-rose-950/95 border-rose-500/40 text-rose-300';
+      const ic = type === 'success' ? 'fa-circle-check text-cyan-400' : 'fa-triangle-exclamation text-rose-400';
+      t.className = 'glass-panel p-4 rounded-2xl border ' + bg + ' flex items-center gap-3 shadow-xl pointer-events-auto transform translate-y-2 opacity-0 transition-all duration-300 font-mono text-xs';
+      t.innerHTML = '<i class="fa-solid ' + ic + ' text-base"></i><span class="flex-grow">' + message + '</span>';
+      c.appendChild(t);
+      setTimeout(() => t.classList.remove('translate-y-2', 'opacity-0'), 10);
+      setTimeout(() => { t.classList.add('translate-y-2', 'opacity-0'); setTimeout(() => t.remove(), 300); }, 3000);
+    };
+
+    window.showLoading = function(title, subtitle = 'Loading...') {
+      const s = document.getElementById('global-loading-screen'); if (!s) return;
+      document.getElementById('loading-title').innerText = title;
+      document.getElementById('loading-subtitle').innerText = subtitle;
+      const bar = document.getElementById('loading-bar-fill'); if (bar) bar.style.width = '100%';
+      document.getElementById('loading-bar-container').classList.remove('hidden');
+      document.getElementById('loading-error-box').classList.add('hidden');
+      document.getElementById('loading-error-actions').classList.add('hidden');
+      s.classList.remove('hidden', 'opacity-0');
+    };
+    window.showLoadingError = function(req, code, desc) {
+      const s = document.getElementById('global-loading-screen'); if (!s) return;
+      s.classList.remove('hidden', 'opacity-0');
+      document.getElementById('loading-title').innerText = "Connection Problem";
+      document.getElementById('loading-title').className = "text-base font-black tracking-tight text-rose-400 font-mono uppercase";
+      document.getElementById('loading-subtitle').innerText = "Unable to reach the shop server";
+      document.getElementById('loading-bar-container').classList.add('hidden');
+      const eb = document.getElementById('loading-error-box');
+      if (eb) { eb.classList.remove('hidden'); document.getElementById('loading-error-request').innerText = req || '—'; document.getElementById('loading-error-code').innerText = 'CODE: ' + (code || 'ERR'); document.getElementById('loading-error-desc').innerText = desc || 'Unable to reach the shop server.'; }
+      document.getElementById('loading-error-actions').classList.remove('hidden');
+    };
+    window.dismissLoadingErrorAndUseOffline = function() {
+      loadDefaultInMemoryData(); renderCategoryPills(); renderShopGrid(); hideLoading();
+      showToast('Switched to offline mode', 'error'); setSyncPill('err', 'Offline');
+    };
+    window.hideLoading = function() {
+      const s = document.getElementById('global-loading-screen'); if (!s) return;
+      s.classList.add('opacity-0'); setTimeout(() => s.classList.add('hidden'), 300);
+    };
+    function setSyncPill(state, text) {
+      const pill = document.getElementById('sync-pill');
+      const t = document.getElementById('sync-pill-text');
+      const icon = document.getElementById('sync-btn-icon');
+      if (!pill) return;
+      pill.classList.remove('ok', 'busy', 'err', 'failed');
+      pill.classList.add(state);
+      if (t) t.innerText = text;
+      if (icon) icon.className = state === 'busy' ? 'fa-solid fa-arrows-rotate fa-spin' : (state === 'failed' ? 'fa-solid fa-triangle-exclamation' : 'fa-solid fa-arrows-rotate');
+    }
+
+    function showFieldError(id, msg) {
+      const i = document.getElementById(id), e = document.getElementById('error-' + id);
+      if (i) i.classList.add('input-error');
+      if (e) { if (msg) e.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> ' + msg; e.classList.remove('hidden'); }
+    }
+    window.clearFieldError = function(id) {
+      const i = document.getElementById(id), e = document.getElementById('error-' + id);
+      if (i) i.classList.remove('input-error');
+      if (e) e.classList.add('hidden');
+    };
+
+    window.openLightbox = function(src) {
+      if (!src) return;
+      document.getElementById('lightbox-img').src = src;
+      document.getElementById('lightbox').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    };
+    window.closeLightbox = function() {
+      document.getElementById('lightbox').classList.remove('active');
+      document.body.style.overflow = '';
+    };
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLightbox(); });
+
+    // ============================================================
+    // CART
+    // ============================================================
+    function saveCart() {
+      try { localStorage.setItem('jj_cart_v1', JSON.stringify(cart)); } catch(e) {}
+    }
+    function loadCart() {
+      try {
+        const raw = localStorage.getItem('jj_cart_v1');
+        if (raw) cart = JSON.parse(raw) || [];
+      } catch(e) { cart = []; }
+    }
+    window.updateCartBadge = function() {
+      const badge = document.getElementById('cart-badge');
+      const totalItems = cart.reduce((s, i) => s + (i.qty || 1), 0);
+      if (!badge) return;
+      if (totalItems > 0) { badge.classList.remove('empty'); badge.innerText = totalItems > 99 ? '99+' : String(totalItems); }
+      else { badge.classList.add('empty'); badge.innerText = '0'; }
+    };
+    window.openCartModal = function() {
+      document.getElementById('modal-cart').classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+      renderCartModal();
+    };
+    window.closeCartModal = function() {
+      document.getElementById('modal-cart').classList.add('hidden');
+      document.body.style.overflow = '';
+    };
+    function renderCartModal() {
+      const container = document.getElementById('cart-items-container');
+      const subtitle = document.getElementById('cart-subtitle');
+      const totalEl = document.getElementById('cart-total');
+      if (cart.length === 0) {
+        container.innerHTML = '<div class="text-center py-16 space-y-3"><i class="fa-solid fa-cart-shopping text-5xl text-slate-700"></i><p class="text-sm font-mono text-slate-500">Your cart is empty.</p><p class="text-[11px] font-mono text-slate-600">Add models from the shop to see them here.</p></div>';
+        subtitle.innerText = '0 items';
+        totalEl.innerText = '฿0';
+        return;
+      }
+      const totalItems = cart.reduce((s, i) => s + i.qty, 0);
+      subtitle.innerText = totalItems + ' item' + (totalItems !== 1 ? 's' : '') + ' (one order)';
+      const totalPrice = cart.reduce((s, i) => s + (i.unitPrice * i.qty), 0);
+      totalEl.innerText = '฿' + totalPrice;
+      container.innerHTML = cart.map(item => {
+        const crop = item.imageCrop || defaultCrop();
+        const thumb = item.imageUrl
+          ? '<img src="' + escapeAttr(item.imageUrl) + '" style="object-position:' + (crop.x || 50) + '% ' + (crop.y || 50) + '%;transform:scale(' + ((crop.zoom || 100) / 100) + ');transform-origin:' + (crop.x || 50) + '% ' + (crop.y || 50) + '%;" />'
+          : '<i class="fa-solid ' + (item.icon || 'fa-cube') + ' text-cyan-400/40 text-xl"></i>';
+        const optsList = Object.keys(item.options || {}).map(k => escapeHtml(k) + ': <strong class="text-white">' + escapeHtml(item.options[k]) + '</strong>').join(' · ');
+        return '<div class="cart-item">'
+          + '<div class="cart-thumb">' + thumb + '</div>'
+          + '<div class="flex-1 min-w-0">'
+          + '<div class="font-bold text-white text-sm truncate">' + escapeHtml(item.title) + '</div>'
+          + '<div class="text-[10px] font-mono text-slate-400 mt-0.5 flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full" style="background:' + item.filamentColor + '"></span> ' + escapeHtml(item.filamentName) + ' · ' + item.scale + '%</div>'
+          + (optsList ? '<div class="text-[10px] font-mono text-cyan-300 mt-0.5 truncate">' + optsList + '</div>' : '')
+          + '<div class="text-emerald-400 font-mono font-black text-sm mt-1">฿' + (item.unitPrice * item.qty) + '</div>'
+          + '</div>'
+          + '<div class="flex flex-col items-end gap-2">'
+          + '<div class="flex items-center gap-1.5">'
+          + '<button class="qty-btn" onclick="updateCartQty(\'' + item.cartId + '\', -1)">−</button>'
+          + '<span class="font-mono text-xs text-white px-1">' + item.qty + '</span>'
+          + '<button class="qty-btn" onclick="updateCartQty(\'' + item.cartId + '\', 1)">+</button>'
+          + '</div>'
+          + '<button onclick="removeFromCart(\'' + item.cartId + '\')" class="text-rose-400 hover:text-rose-300 text-[10px] font-mono transition"><i class="fa-solid fa-trash-can"></i></button>'
+          + '</div>'
+          + '</div>';
+      }).join('');
+    }
+    window.updateCartQty = function(cartId, delta) {
+      const it = cart.find(i => i.cartId === cartId); if (!it) return;
+      it.qty = Math.max(1, Math.min(99, it.qty + delta));
+      saveCart(); renderCartModal(); updateCartBadge(); renderOwnerCartTable();
+    };
+    window.removeFromCart = function(cartId) {
+      cart = cart.filter(i => i.cartId !== cartId);
+      saveCart(); renderCartModal(); updateCartBadge(); renderOwnerCartTable();
+    };
+    window.clearCart = function() {
+      if (cart.length === 0) return;
+      cart = []; saveCart(); renderCartModal(); updateCartBadge(); renderOwnerCartTable();
+      showToast('Cart cleared.');
+    };
+
+    window.addCurrentConfigToCart = function() {
+      if (!currentConfiguredModel) return;
+      const scale = parseInt(document.getElementById('buy-scale-slider').value);
+      const fil = filamentMap.get(selectedFilamentId);
+      if (!fil || !fil.inStock) { showToast('Please select a valid in-stock filament.', 'error'); return; }
+      const sm = Math.pow(scale / 100, 1.5);
+      const optionsCost = getSelectedOptionsCost();
+      const unitPrice = Math.round((currentConfiguredModel.price * sm) + fil.surcharge + optionsCost);
+      const humanOpts = {};
+      (currentConfiguredModel.options || []).forEach((g, gi) => {
+        const gid = g.id || ('g' + gi);
+        const v = selectedOptions[gid];
+        if (v !== undefined) humanOpts[g.name || gid] = v;
+      });
+      cart.push({
+        cartId: 'c-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6),
+        modelId: currentConfiguredModel.id,
+        title: currentConfiguredModel.title,
+        icon: currentConfiguredModel.icon || 'fa-cube',
+        imageUrl: currentConfiguredModel.imageUrl || '',
+        imageCrop: currentConfiguredModel.imageCrop || defaultCrop(),
+        filamentId: fil.id,
+        filamentName: fil.name,
+        filamentColor: fil.color,
+        scale: scale,
+        options: humanOpts,
+        unitPrice: unitPrice,
+        qty: 1
+      });
+      saveCart(); updateCartBadge(); renderOwnerCartTable();
+      showToast('Added to cart: ' + currentConfiguredModel.title);
+      closePurchaseModal();
+    };
+
+    window.checkoutCart = function() {
+      if (cart.length === 0) { showToast('Cart is empty.', 'error'); return; }
+      const savedName = localStorage.getItem('jj_last_name') || '';
+      document.getElementById('checkout-name-input').value = savedName;
+      clearFieldError('checkout-name-input');
+      const totalQty = cart.reduce((s, i) => s + i.qty, 0);
+      const totalPrice = cart.reduce((s, i) => s + (i.unitPrice * i.qty), 0);
+      document.getElementById('checkout-summary-count').innerText = totalQty + ' piece' + (totalQty !== 1 ? 's' : '');
+      document.getElementById('checkout-summary-total').innerText = '฿' + totalPrice;
+      closeCartModal();
+      document.getElementById('modal-checkout-name').classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+      setTimeout(() => document.getElementById('checkout-name-input').focus(), 100);
+    };
+    window.closeCheckoutNameModal = function() {
+      document.getElementById('modal-checkout-name').classList.add('hidden');
+      document.body.style.overflow = '';
+    };
+
+    window.submitCheckoutName = async function() {
+      const nEl = document.getElementById('checkout-name-input');
+      const customerName = nEl.value.trim();
+      if (!customerName || customerName.length < 2) {
+        showFieldError('checkout-name-input', 'Please enter at least 2 characters');
+        nEl.focus();
+        return;
+      }
+      localStorage.setItem('jj_last_name', customerName);
+      closeCheckoutNameModal();
+
+      const code = '8A' + Math.random().toString(36).substring(2, 8).toUpperCase();
+      const printers = ['Bambu Lab A2L', 'Bambu Lab A1 Mini'];
+      const printer = printers[Math.floor(Math.random() * printers.length)];
+      const totalPrice = cart.reduce((s, i) => s + (i.unitPrice * i.qty), 0);
+      const totalQty = cart.reduce((s, i) => s + i.qty, 0);
+
+      const orderItems = [];
+      cart.forEach(cartItem => {
+        for (let q = 0; q < cartItem.qty; q++) {
+          orderItems.push({
+            title: cartItem.title,
+            icon: cartItem.icon,
+            filamentName: cartItem.filamentName,
+            filamentColor: cartItem.filamentColor,
+            scale: cartItem.scale,
+            options: cartItem.options,
+            unitPrice: cartItem.unitPrice
+          });
+        }
+      });
+
+      const uniqueTitles = [...new Set(cart.map(c => c.title))];
+      const summaryTitle = uniqueTitles.length === 1
+        ? uniqueTitles[0] + (totalQty > 1 ? ' ×' + totalQty : '')
+        : uniqueTitles.length + ' models (' + totalQty + ' items)';
+
+      const specsSummary = cart.map(c => c.title + ' ×' + c.qty + ' (' + c.filamentName + ', ' + c.scale + '%)').join(' | ');
+
+      const newOrder = {
+        trackingCode: code,
+        customerName,
+        modelTitle: summaryTitle,
+        modelIcon: cart[0].icon || 'fa-cube',
+        specs: specsSummary,
+        printerName: printer,
+        stage: 0,
+        selectedOptions: {},
+        items: orderItems,
+        logs: [
+          '▶ Order created for ' + customerName + ' (฿' + totalPrice + ') — ' + totalQty + ' item(s).',
+          '▶ Assigned to physical machine: ' + printer + '.'
+        ],
+        createdAt: new Date().toISOString().replace('T', ' ').substring(0, 16)
+      };
+
+      orders.unshift(newOrder);
+      try { await saveOrderToDb(newOrder); } catch (e) {}
+
+      try {
+        const myOrders = JSON.parse(localStorage.getItem('jj_my_orders_v1') || '[]');
+        myOrders.push(code);
+        localStorage.setItem('jj_my_orders_v1', JSON.stringify(myOrders.slice(-50)));
+      } catch (e) {}
+
+      rebuildMaps();
+      cart = []; saveCart(); updateCartBadge(); renderOwnerCartTable();
+      showToast('Order placed! Tracking Code: ' + code);
+      viewOrderTracking(code);
+      customerSync();
+    };
+
+    window.renderOwnerCartTable = function() {
+      const container = document.getElementById('owner-cart-table-container');
+      const countEl = document.getElementById('owner-cart-count');
+      if (!container) return;
+      const totalItems = cart.reduce((s, i) => s + i.qty, 0);
+      if (countEl) countEl.innerText = totalItems + ' item' + (totalItems !== 1 ? 's' : '');
+      if (cart.length === 0) {
+        container.innerHTML = '<p class="text-xs font-mono text-slate-500 text-center py-4">No items in cart.</p>';
+        return;
+      }
+      const total = cart.reduce((s, i) => s + (i.unitPrice * i.qty), 0);
+      container.innerHTML = '<table class="cart-table">'
+        + '<thead><tr><th>Model</th><th>Filament</th><th>Scale</th><th>Options</th><th>Qty</th><th class="text-right">Price</th></tr></thead>'
+        + '<tbody>'
+        + cart.map(item => {
+            const optsList = Object.keys(item.options || {}).map(k => escapeHtml(k) + ': ' + escapeHtml(item.options[k])).join(', ') || '—';
+            return '<tr>'
+              + '<td class="text-white font-bold">' + escapeHtml(item.title) + '</td>'
+              + '<td><span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full" style="background:' + item.filamentColor + '"></span> ' + escapeHtml(item.filamentName) + '</span></td>'
+              + '<td class="text-cyan-300">' + item.scale + '%</td>'
+              + '<td class="text-slate-400 text-[10px]">' + optsList + '</td>'
+              + '<td class="text-slate-200">' + item.qty + '</td>'
+              + '<td class="text-right text-emerald-400 font-bold">฿' + (item.unitPrice * item.qty) + '</td>'
+              + '</tr>';
+          }).join('')
+        + '</tbody></table>'
+        + '<div class="flex justify-end pt-3 border-t border-slate-800 mt-3">'
+        + '<div class="text-right"><span class="text-[10px] font-mono text-slate-500 block">CART TOTAL</span><span class="text-lg font-black text-emerald-400">฿' + total + '</span></div>'
+        + '</div>';
+    };
+
+    // ============================================================
+    // NAVIGATION
+    // ============================================================
+    window.navigateTo = function(viewName, updateHash = true) {
+      if (viewName === 'owner') { openOwnerPinModal(); return; }
+      if (updateHash) {
+        const target = '#' + viewName;
+        if (window.location.hash !== target) { window.location.hash = target; return; }
+      }
+      activeView = viewName;
+      document.getElementById('view-shop').classList.add('hidden');
+      document.getElementById('view-tracking').classList.add('hidden');
+      document.getElementById('view-owner').classList.add('hidden');
+      if (viewName === 'shop') { document.getElementById('view-shop').classList.remove('hidden'); renderShopGrid(); }
+      else if (viewName === 'tracking') { document.getElementById('view-tracking').classList.remove('hidden'); }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+    window.handleHashNavigation = function() {
+      const h = window.location.hash.replace('#', '');
+      if (h === 'tracking') {
+        if (!activeTrackingCode && orders.length > 0) activeTrackingCode = orders[0].trackingCode;
+        if (activeTrackingCode) viewOrderTracking(activeTrackingCode, false);
+        else navigateTo('shop', false);
+      } else if (h === 'owner') { navigateTo('shop', false); openOwnerPinModal(); }
+      else navigateTo('shop', false);
+    };
+    window.addEventListener('hashchange', handleHashNavigation);
+    window.exitOwnerPortal = function() { activeView = 'shop'; history.replaceState(null, '', '#shop'); navigateTo('shop', false); };
+
+    function escapeHtml(str) { if (str == null) return ''; return String(str).replace(/[&<>"']/g, s => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[s])); }
+    function escapeAttr(str) { return escapeHtml(str).replace(/"/g, '&quot;'); }
+
+    function buildImageTag(model) {
+      if (!model.imageUrl) {
+        return '<div class="img-placeholder"><i class="fa-solid ' + (model.icon || 'fa-cube') + ' text-5xl text-cyan-400/40"></i></div>';
+      }
+      const c = model.imageCrop || defaultCrop();
+      const aspect = c.aspect || '4/3';
+      const style = 'object-position: ' + (c.x || 50) + '% ' + (c.y || 50) + '%; transform: scale(' + ((c.zoom || 100) / 100) + '); transform-origin: ' + (c.x || 50) + '% ' + (c.y || 50) + '%;';
+      const imgSrcAttr = escapeAttr(model.imageUrl);
+      return '<div class="product-img-wrap" style="aspect-ratio:' + aspect + ';" onclick="openLightbox(\'' + imgSrcAttr + '\')">'
+        + '<img src="' + imgSrcAttr + '" alt="' + escapeAttr(model.title) + '" style="' + style + '" />'
+        + '<div class="zoom-hint"><i class="fa-solid fa-magnifying-glass-plus text-white text-2xl"></i></div>'
+        + '</div>';
+    }
+
+    // ============================================================
+    // SHOP RENDERING
+    // ============================================================
+    window.renderCategoryPills = function() {
+      const c = document.getElementById('category-pills-container'); if (!c) return;
+      const cats = [
+        { key: 'All', label: 'All', icon: 'fa-cube' },
+        { key: 'New Arrivals', label: 'New Arrivals', icon: 'fa-star' },
+        { key: 'Articulated', label: 'Articulated' },
+        { key: 'Miniatures', label: 'Miniatures' },
+        { key: 'Mechanical', label: 'Mechanical' },
+        { key: 'Toys', label: 'Toys' },
+        { key: 'Functional', label: 'Functional' },
+        { key: 'Cosplay', label: 'Cosplay' },
+        { key: 'Desk Decor', label: 'Desk Decor' },
+        { key: 'Fidget', label: 'Fidget' },
+        { key: 'Puzzles', label: 'Puzzles' }
+      ];
+      c.innerHTML = cats.map(cat => {
+        const a = currentCategory === cat.key;
+        const isNew = cat.key === 'New Arrivals';
+        let cls;
+        if (a && isNew) cls = 'bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 font-bold border-amber-400 shadow-lg shadow-amber-500/30';
+        else if (a) cls = 'bg-cyan-500 text-slate-950 font-bold border-cyan-400 shadow-lg shadow-cyan-500/20';
+        else if (isNew) cls = 'bg-amber-950/40 text-amber-300 border-amber-500/30 hover:border-amber-400/60';
+        else cls = 'bg-slate-900/80 text-slate-300 border-slate-800 hover:border-slate-700';
+        return '<button onclick="setCategory(\'' + cat.key + '\')" class="px-3.5 py-1.5 rounded-xl text-xs font-mono border transition flex-shrink-0 flex items-center gap-1.5 ' + cls + '">' + (cat.icon ? '<i class="fa-solid ' + cat.icon + '"></i> ' : '') + cat.label + '</button>';
+      }).join('');
+    };
+    window.setCategory = function(cat) { currentCategory = cat; renderCategoryPills(); renderShopGrid(); };
+    window.debounceRenderShopGrid = function() {
+      if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
+      searchDebounceTimer = setTimeout(() => renderShopGrid(), 150);
+    };
+    window.renderShopGrid = function() {
+      const g = document.getElementById('product-grid'); if (!g) return;
+      const s = (document.getElementById('shop-search-input') || {}).value || '';
+      const search = s.toLowerCase();
+      const filtered = catalogModels.filter(m => {
+        let mc;
+        if (currentCategory === 'All') mc = true;
+        else if (currentCategory === 'New Arrivals') mc = !!m.newArrival;
+        else mc = m.category === currentCategory;
+        return mc && (m.title + ' ' + (m.desc || '')).toLowerCase().includes(search);
+      });
+      if (filtered.length === 0) {
+        g.innerHTML = '<div class="col-span-full py-16 text-center space-y-3 glass-panel rounded-3xl border border-slate-800"><i class="fa-solid ' + (currentCategory === 'New Arrivals' ? 'fa-star' : 'fa-cube') + ' text-4xl text-slate-600"></i><p class="text-sm font-mono text-slate-400">No 3D print models found.</p></div>';
+        return;
+      }
+      g.innerHTML = filtered.map(model => {
+        const optionsBadge = (model.options && model.options.length > 0)
+          ? '<span class="absolute bottom-3 right-3 bg-cyan-500/90 text-slate-950 text-[9px] font-black font-mono px-2 py-1 rounded-lg shadow-lg z-10"><i class="fa-solid fa-sliders"></i> ' + model.options.length + ' OPTION' + (model.options.length > 1 ? 'S' : '') + '</span>' : '';
+        const newBadge = model.newArrival ? '<span class="new-badge"><i class="fa-solid fa-star"></i> NEW</span>' : '';
+        return '<div class="glass-card rounded-3xl overflow-hidden border border-slate-800 flex flex-col justify-between group' + (model.newArrival ? ' ring-1 ring-amber-500/30' : '') + '">'
+          + '<div class="relative">' + buildImageTag(model) + '<span class="absolute top-3 left-3 bg-slate-950/90 backdrop-blur px-3 py-1 rounded-xl border border-slate-800 text-[10px] font-mono text-cyan-400 font-bold z-10">' + escapeHtml(model.category) + '</span>' + newBadge + optionsBadge + '</div>'
+          + '<div class="p-6 space-y-3">'
+          + '<div class="flex items-center gap-2"><div class="w-8 h-8 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 text-sm"><i class="fa-solid ' + (model.icon || 'fa-cube') + '"></i></div><h3 class="text-base font-bold text-white tracking-tight">' + escapeHtml(model.title) + '</h3></div>'
+          + '<p class="text-xs text-slate-400 line-clamp-3 leading-relaxed">' + escapeHtml(model.desc || '') + '</p></div>'
+          + '<div class="p-6 pt-0 flex items-center justify-between mt-2"><div><span class="text-[10px] font-mono text-slate-500 block">BASE PRICE</span><span class="text-lg font-black text-cyan-400 font-mono">฿' + model.price + '</span></div>'
+          + '<button onclick="openPurchaseModal(\'' + model.id + '\')" class="px-4 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-black transition shadow-md flex items-center gap-1.5"><i class="fa-solid fa-cart-shopping"></i> Order Print</button></div>'
+          + '</div>';
+      }).join('');
+    };
+
+    // ============================================================
+    // PURCHASE MODAL
+    // ============================================================
+    window.openPurchaseModal = function(modelId) {
+      const m = catalogMap.get(modelId); if (!m) return;
+      currentConfiguredModel = m;
+      selectedOptions = {};
+      document.getElementById('buy-modal-name').innerText = m.title;
+      document.getElementById('buy-modal-category').innerText = m.category;
+      document.getElementById('buy-modal-desc').innerText = m.desc || '';
+      document.getElementById('buy-modal-base-price').innerText = '฿' + m.price;
+      const icon = document.getElementById('buy-modal-icon-box');
+      if (m.imageUrl) icon.style.display = 'none';
+      else { icon.style.display = 'flex'; icon.innerHTML = '<i class="fa-solid ' + (m.icon || 'fa-cube') + '"></i>'; }
+      const heroImg = document.getElementById('buy-hero-image');
+      const heroPh = document.getElementById('buy-hero-placeholder');
+      if (m.imageUrl) {
+        heroImg.src = m.imageUrl;
+        heroImg.style.display = 'block';
+        heroPh.style.display = 'none';
+      } else {
+        heroImg.style.display = 'none';
+        heroPh.style.display = 'flex';
+        heroPh.innerHTML = '<i class="fa-solid ' + (m.icon || 'fa-cube') + ' text-6xl text-cyan-400/40"></i>';
+      }
+      document.getElementById('buy-scale-slider').value = 100;
+      document.getElementById('buy-scale-val').innerText = '100% (Standard)';
+      document.getElementById('buy-customer-name').value = localStorage.getItem('jj_last_name') || '';
+      clearFieldError('buy-customer-name');
+      renderPurchaseModalFilamentChoices();
+      renderPurchaseOptions();
+      updateBuyTotal();
+      document.getElementById('modal-purchase').classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    };
+
+    function renderPurchaseOptions() {
+      const section = document.getElementById('buy-options-section');
+      const container = document.getElementById('buy-options-container');
+      const opts = (currentConfiguredModel && currentConfiguredModel.options) || [];
+      if (opts.length === 0) { section.classList.add('hidden'); container.innerHTML = ''; return; }
+      section.classList.remove('hidden');
+      container.innerHTML = opts.map((group, gi) => {
+        const gid = group.id || ('g' + gi);
+        const choices = group.choices || [];
+        if (selectedOptions[gid] === undefined && choices.length > 0) {
+          selectedOptions[gid] = choices[0].value !== undefined ? choices[0].value : choices[0];
+        }
+        const cur = selectedOptions[gid];
+        return '<div class="space-y-2">'
+          + '<div class="flex items-center justify-between"><span class="text-xs font-mono text-slate-300 font-bold">' + escapeHtml(group.name || 'Option') + '</span><span class="text-[10px] font-mono text-cyan-400">' + escapeHtml(cur || '—') + '</span></div>'
+          + '<div class="flex flex-wrap gap-2">' + choices.map(c => {
+              const val = c.value !== undefined ? c.value : c;
+              const label = c.label !== undefined ? c.label : val;
+              const delta = Number(c.priceDelta || c.surcharge || 0);
+              const sel = cur === val;
+              const pt = delta > 0 ? ' (+฿' + delta + ')' : '';
+              return '<div data-option-group="' + escapeAttr(gid) + '" data-option-value="' + escapeAttr(val) + '" class="option-chip px-3 py-1.5 rounded-xl border text-xs font-mono transition cursor-pointer ' + (sel ? 'selected' : 'border-slate-800 bg-slate-900 text-slate-300 hover:border-slate-700') + '">' + escapeHtml(label) + '<span class="text-cyan-400/80 text-[10px]">' + pt + '</span></div>';
+            }).join('') + '</div></div>';
+      }).join('');
+    }
+
+    window.selectOption = function(gid, val) {
+      if (selectedOptions[gid] === val) return;
+      selectedOptions[gid] = val;
+      renderPurchaseOptions();
+      updateBuyTotal();
+    };
+
+    document.addEventListener('click', function(e) {
+      const chip = e.target.closest('[data-option-group]');
+      if (!chip) return;
+      const purchaseModal = document.getElementById('modal-purchase');
+      if (!purchaseModal || purchaseModal.classList.contains('hidden')) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const gid = chip.getAttribute('data-option-group');
+      const val = chip.getAttribute('data-option-value');
+      selectOption(gid, val);
+    }, true);
+
+    function renderPurchaseModalFilamentChoices() {
+      const fc = document.getElementById('buy-filament-options'); if (!fc) return;
+      if (filaments.length === 0) { fc.innerHTML = '<p class="col-span-full text-xs font-mono text-rose-400">No filaments available.</p>'; return; }
+      if (!filamentMap.has(selectedFilamentId) || !filamentMap.get(selectedFilamentId).inStock) {
+        const first = filaments.find(f => f.inStock);
+        selectedFilamentId = first ? first.id : (filaments[0] ? filaments[0].id : null);
+      }
+      fc.innerHTML = filaments.map(f => {
+        const sel = f.id === selectedFilamentId;
+        const cls = sel ? 'border-cyan-500 bg-cyan-950/40 text-white' : 'border-slate-800 bg-slate-900 text-slate-400';
+        const badge = f.inStock ? '<span class="text-[9px] text-cyan-300 ml-auto">+฿' + f.surcharge + '</span>' : '<span class="text-[9px] text-rose-400 ml-auto">[Out]</span>';
+        const dis = f.inStock ? '' : 'opacity-50 pointer-events-none';
+        return '<div onclick="' + (f.inStock ? "selectFilament('" + f.id + "')" : '') + '" class="p-2.5 rounded-xl border ' + cls + ' cursor-pointer transition flex items-center gap-2 text-xs font-mono ' + dis + '"><span class="w-3.5 h-3.5 rounded-full shadow-sm flex-shrink-0" style="background-color: ' + f.color + '"></span><span class="truncate">' + escapeHtml(f.name) + '</span>' + badge + '</div>';
+      }).join('');
+    }
+    window.selectFilament = function(id) { selectedFilamentId = id; renderPurchaseModalFilamentChoices(); updateBuyTotal(); };
+
+    function getSelectedOptionsCost() {
+      if (!currentConfiguredModel || !currentConfiguredModel.options) return 0;
+      let t = 0;
+      currentConfiguredModel.options.forEach((g, gi) => {
+        const gid = g.id || ('g' + gi);
+        const val = selectedOptions[gid]; if (val === undefined) return;
+        const c = (g.choices || []).find(x => (x.value !== undefined ? x.value : x) === val);
+        if (c && c.priceDelta) t += Number(c.priceDelta);
+      });
+      return t;
+    }
+
+    window.updateBuyTotal = function() {
+      if (!currentConfiguredModel) return;
+      const scale = parseInt(document.getElementById('buy-scale-slider').value);
+      document.getElementById('buy-scale-val').innerText = scale + '%';
+      const fil = filamentMap.get(selectedFilamentId);
+      const surcharge = fil ? fil.surcharge : 0;
+      const sm = Math.pow(scale / 100, 1.5);
+      const total = Math.round((currentConfiguredModel.price * sm) + surcharge + getSelectedOptionsCost());
+      document.getElementById('buy-total-price').innerText = '฿' + total;
+    };
+    window.closePurchaseModal = function() {
+      document.getElementById('modal-purchase').classList.add('hidden');
+      document.body.style.overflow = '';
+      clearFieldError('buy-customer-name');
+    };
+
+    window.confirmPurchaseOrder = async function() {
+      if (!currentConfiguredModel) return;
+      const nEl = document.getElementById('buy-customer-name');
+      const name = nEl.value.trim();
+      if (!name || name.length < 2) {
+        showFieldError('buy-customer-name', 'Please enter at least 2 characters');
+        showToast('Please enter a valid name (2+ characters).', 'error');
+        nEl.focus();
+        return;
+      }
+      localStorage.setItem('jj_last_name', name);
+      const scale = document.getElementById('buy-scale-slider').value;
+      const fil = filamentMap.get(selectedFilamentId) || filaments[0];
+      if (!fil || !fil.inStock) { showToast('Please select a valid in-stock filament.', 'error'); return; }
+      const code = '8A' + Math.random().toString(36).substring(2, 8).toUpperCase();
+      const sm = Math.pow(scale / 100, 1.5);
+      const finalPrice = Math.round((currentConfiguredModel.price * sm) + fil.surcharge + getSelectedOptionsCost());
+      const printers = ['Bambu Lab A2L', 'Bambu Lab A1 Mini'];
+      const printer = printers[Math.floor(Math.random() * printers.length)];
+      const humanOpts = {};
+      (currentConfiguredModel.options || []).forEach((g, gi) => {
+        const gid = g.id || ('g' + gi);
+        const v = selectedOptions[gid];
+        if (v !== undefined) humanOpts[g.name || gid] = v;
+      });
+      const newOrder = {
+        trackingCode: code, customerName: name,
+        modelTitle: currentConfiguredModel.title,
+        modelIcon: currentConfiguredModel.icon || 'fa-cube',
+        specs: fil.name + ' | ' + scale + '% Scale (฿' + finalPrice + ')',
+        printerName: printer, stage: 0, selectedOptions: humanOpts,
+        items: [{
+          title: currentConfiguredModel.title,
+          icon: currentConfiguredModel.icon || 'fa-cube',
+          filamentName: fil.name,
+          filamentColor: fil.color,
+          scale: scale,
+          options: humanOpts,
+          unitPrice: finalPrice
+        }],
+        logs: [
+          '▶ Order created for ' + name + ' (฿' + finalPrice + ').',
+          '▶ Filament selected: ' + fil.name + ' (+฿' + fil.surcharge + ').',
+          '▶ Assigned to physical machine: ' + printer + '.'
+        ],
+        createdAt: new Date().toISOString().replace('T', ' ').substring(0, 16)
+      };
+      orders.unshift(newOrder); rebuildMaps();
+      try {
+        const myOrders = JSON.parse(localStorage.getItem('jj_my_orders_v1') || '[]');
+        myOrders.push(code);
+        localStorage.setItem('jj_my_orders_v1', JSON.stringify(myOrders.slice(-50)));
+      } catch (e) {}
+      closePurchaseModal();
+      showToast('Order placed! Tracking Code: ' + code);
+      viewOrderTracking(code);
+      customerSync();
+    };
+
+    // ============================================================
+    // TRACKING
+    // ============================================================
+    window.viewOrderTracking = function(code, updateHash = true) {
+      const o = orderMap.get(code);
+      if (!o) { showToast('Tracking code not found.', 'error'); return; }
+      activeTrackingCode = code; activeView = 'tracking';
+      if (updateHash && window.location.hash !== '#tracking') window.location.hash = '#tracking';
+      document.getElementById('track-number-display').innerText = o.trackingCode;
+      document.getElementById('track-item-title').innerHTML = '<i class="fa-solid ' + (o.modelIcon || 'fa-cube') + ' text-cyan-400 mr-1.5"></i> ' + escapeHtml(o.modelTitle);
+      document.getElementById('track-item-specs').innerText = o.specs;
+      const stages = ['Order Received', 'Printing in Progress', 'Inspected & Packaged', 'Ready for Pickup'];
+      const st = Math.max(0, Math.min(3, o.stage));
+      document.getElementById('current-status-title').innerText = stages[st];
+      document.getElementById('progress-bar-fill').style.width = [0,33,66,100][st] + '%';
+      for (let i = 0; i <= 3; i++) {
+        const b = document.getElementById('node-blob-' + i);
+        if (b) b.className = i <= st
+          ? 'w-10 h-10 rounded-xl bg-cyan-500 text-slate-950 font-black border-2 border-cyan-400 flex items-center justify-center text-xs shadow-lg shadow-cyan-500/30 transition-all'
+          : 'w-10 h-10 rounded-xl bg-slate-900 border-2 border-slate-700 flex items-center justify-center text-slate-500 text-xs font-bold transition-all';
+      }
+      const pickupWrap = document.getElementById('pickup-message-wrap');
+      if (st >= 1) pickupWrap.classList.remove('hidden');
+      else pickupWrap.classList.add('hidden');
+
+      const itemsWrap = document.getElementById('track-items-wrap');
+      const itemsList = document.getElementById('track-items-list');
+      const items = o.items || [];
+      if (items.length > 0) {
+        itemsWrap.classList.remove('hidden');
+        itemsList.innerHTML = items.map((it, i) =>
+          '<div class="flex items-center gap-3 p-3 bg-slate-950/60 border border-slate-800 rounded-xl">'
+          + '<span class="text-cyan-400 font-bold w-6 text-center">' + (i + 1) + '.</span>'
+          + '<i class="fa-solid ' + (it.icon || 'fa-cube') + ' text-cyan-400"></i>'
+          + '<div class="flex-1 min-w-0">'
+          + '<div class="text-white font-bold truncate">' + escapeHtml(it.title) + '</div>'
+          + '<div class="text-[10px] text-slate-400 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background:' + (it.filamentColor || '#64748b') + '"></span> ' + escapeHtml(it.filamentName || '') + ' · ' + (it.scale || 100) + '%'
+          + (it.options && Object.keys(it.options).length > 0 ? ' · ' + Object.keys(it.options).map(k => escapeHtml(k) + '=' + escapeHtml(it.options[k])).join(', ') : '')
+          + '</div></div>'
+          + '<span class="text-emerald-400 font-bold">฿' + (it.unitPrice || 0) + '</span>'
+          + '</div>'
+        ).join('');
+      } else {
+        itemsWrap.classList.add('hidden');
+        itemsList.innerHTML = '';
+      }
+
+      const ll = document.getElementById('audit-log-list');
+      if (ll) ll.innerHTML = o.logs.map(l => '<li>' + escapeHtml(l) + '</li>').join('');
+      const oSec = document.getElementById('track-selected-options');
+      const oList = document.getElementById('track-selected-options-list');
+      const so = o.selectedOptions || {};
+      const keys = Object.keys(so);
+      if (keys.length > 0 && items.length === 0) {
+        oSec.classList.remove('hidden');
+        oList.innerHTML = keys.map(k => '<span class="px-3 py-1.5 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-300"><i class="fa-solid fa-circle-check text-[10px] mr-1"></i> ' + escapeHtml(k) + ': <strong class="text-white">' + escapeHtml(so[k]) + '</strong></span>').join('');
+      } else { oSec.classList.add('hidden'); oList.innerHTML = ''; }
+      document.getElementById('view-shop').classList.add('hidden');
+      document.getElementById('view-tracking').classList.remove('hidden');
+      document.getElementById('view-owner').classList.add('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+    window.copyTrackingNumber = function() {
+      if (!activeTrackingCode) return;
+      const t = activeTrackingCode;
+      if (navigator.clipboard && navigator.clipboard.writeText)
+        navigator.clipboard.writeText(t).then(() => showToast('Copied ' + t)).catch(() => fallbackCopy(t));
+      else fallbackCopy(t);
+    };
+    function fallbackCopy(text) {
+      const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); showToast('Copied!'); } catch (e) { showToast('Copy failed.', 'error'); }
+      document.body.removeChild(ta);
+    }
+    window.openQuickTrackModal = function() { document.getElementById('modal-quick-track').classList.remove('hidden'); };
+    window.closeQuickTrackModal = function() { document.getElementById('modal-quick-track').classList.add('hidden'); };
+    window.submitQuickTrack = function() {
+      const c = document.getElementById('quick-track-input').value.trim().toUpperCase();
+      if (!c) { showToast('Enter a valid code.', 'error'); return; }
+      closeQuickTrackModal(); viewOrderTracking(c);
+    };
+
+    // ============================================================
+    // OWNER PORTAL
+    // ============================================================
+    window.openOwnerPinModal = function() {
+      document.getElementById('owner-pin-input').value = '';
+      document.getElementById('modal-owner-pin').classList.remove('hidden');
+      setTimeout(() => document.getElementById('owner-pin-input').focus(), 50);
+    };
+    window.closeOwnerPinModal = function() {
+      document.getElementById('modal-owner-pin').classList.add('hidden');
+      if (activeView !== 'owner') {
+        if (window.location.hash === '#owner') history.replaceState(null, '', '#shop');
+        navigateTo('shop', false);
+      }
+    };
+    window.verifyOwnerPin = function() {
+      const pin = document.getElementById('owner-pin-input').value.trim();
+      if (pin === '85455') {
+        document.getElementById('modal-owner-pin').classList.add('hidden');
+        showToast('Owner Portal access granted!');
+        activeView = 'owner'; history.replaceState(null, '', '#owner');
+        document.getElementById('view-shop').classList.add('hidden');
+        document.getElementById('view-tracking').classList.add('hidden');
+        document.getElementById('view-owner').classList.remove('hidden');
+        renderOwnerPortal();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else showToast('Incorrect PIN.', 'error');
+    };
+
+    window.renderOwnerPortal = function() {
+      const ac = orders.filter(o => o.stage < 3).length;
+      const cc = orders.filter(o => o.stage === 3).length;
+      document.getElementById('owner-stat-total').innerText = orders.length;
+      document.getElementById('owner-stat-active').innerText = ac;
+      document.getElementById('owner-stat-completed').innerText = cc;
+      renderOwnerFilaments(); renderOwnerCatalog(); renderOwnerPortalOrders(); renderOwnerCartTable();
+    };
+
+    window.renderOwnerFilaments = function() {
+      const c = document.getElementById('owner-filaments-container'); if (!c) return;
+      if (filaments.length === 0) { c.innerHTML = '<p class="col-span-full text-xs font-mono text-slate-500">No filaments.</p>'; return; }
+      c.innerHTML = filaments.map((f, i) => {
+        const first = i === 0, last = i === filaments.length - 1;
+        return '<div class="glass-card p-4 rounded-2xl border border-slate-800 filament-card font-mono text-xs">'
+          + '<div class="flex items-start justify-between gap-2">'
+          + '<div class="flex items-start gap-2.5 min-w-0 flex-1">'
+          + '<span class="w-4 h-4 rounded-full shadow-md flex-shrink-0 mt-0.5" style="background-color: ' + f.color + '"></span>'
+          + '<div class="min-w-0 flex-1">'
+          + '<span class="text-slate-200 font-bold filament-name">' + escapeHtml(f.name) + '</span>'
+          + (f.description ? '<p class="text-[10px] text-slate-500 filament-name mt-0.5">' + escapeHtml(f.description) + '</p>' : '')
+          + '</div></div>'
+          + '<div class="filament-actions">'
+          + '<button onclick="moveFilament(\'' + f.id + '\', -1)" ' + (first ? 'disabled' : '') + ' class="p-1 transition ' + (first ? 'text-slate-700 cursor-not-allowed' : 'text-slate-400 hover:text-cyan-400') + '"><i class="fa-solid fa-arrow-up"></i></button>'
+          + '<button onclick="moveFilament(\'' + f.id + '\', 1)" ' + (last ? 'disabled' : '') + ' class="p-1 transition ' + (last ? 'text-slate-700 cursor-not-allowed' : 'text-slate-400 hover:text-cyan-400') + '"><i class="fa-solid fa-arrow-down"></i></button>'
+          + '<button onclick="openEditFilamentModal(\'' + f.id + '\')" class="text-slate-400 hover:text-amber-400 transition p-1"><i class="fa-solid fa-pen-to-square"></i></button>'
+          + '<button onclick="deleteFilament(\'' + f.id + '\')" class="text-slate-500 hover:text-rose-400 transition p-1"><i class="fa-solid fa-trash-can"></i></button>'
+          + '</div></div>'
+          + '<div class="flex items-center justify-between pt-2 border-t border-slate-800 gap-2 flex-wrap">'
+          + '<span class="text-slate-400 text-[10px]">+฿' + f.surcharge + ' surcharge</span>'
+          + '<button onclick="toggleFilamentStock(\'' + f.id + '\')" class="px-2.5 py-1 rounded-xl text-[10px] font-bold transition ' + (f.inStock ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-red-500/20 text-red-400 border border-red-500/30') + '">' + (f.inStock ? 'In Stock' : 'Out of Stock') + '</button>'
+          + '</div></div>';
+      }).join('');
+    };
+    window.moveFilament = async function(id, dir) {
+      const i = filaments.findIndex(f => f.id === id); if (i === -1) return;
+      const ni = i + dir; if (ni < 0 || ni >= filaments.length) return;
+      [filaments[i], filaments[ni]] = [filaments[ni], filaments[i]];
+      filaments.forEach((f, idx) => f.sortOrder = idx);
+      renderOwnerFilaments();
+      try { await bulkWrite(COL_FILAMENTS, filaments.map(f => ({ ...f })), f => f.id); } catch (e) {}
+    };
+
+    function updateFilamentPreview() {
+      const name = (document.getElementById('new-filament-name').value || 'Neon Pink PLA').trim() || 'Neon Pink PLA';
+      const desc = (document.getElementById('new-filament-desc').value || '').trim() || 'Filament description preview';
+      const color = document.getElementById('new-filament-color').value;
+      const surcharge = parseInt(document.getElementById('new-filament-surcharge').value) || 0;
+      document.getElementById('filament-preview-swatch').style.backgroundColor = color;
+      document.getElementById('filament-preview-name').innerText = name;
+      document.getElementById('filament-preview-desc').innerText = desc;
+      document.getElementById('filament-preview-surcharge').innerText = '+฿' + surcharge;
+    }
+    window.setFilamentColor = function(c) { document.getElementById('new-filament-color').value = c; updateFilamentPreview(); };
+
+    window.openAddFilamentModal = function() {
+      document.getElementById('edit-filament-id').value = '';
+      document.getElementById('filament-modal-title').innerHTML = '<i class="fa-solid fa-plus text-amber-400"></i> Add New Filament';
+      document.getElementById('filament-submit-label').innerText = 'Add Filament';
+      document.getElementById('new-filament-name').value = '';
+      document.getElementById('new-filament-desc').value = '';
+      document.getElementById('new-filament-color').value = '#ec4899';
+      document.getElementById('new-filament-surcharge').value = '10';
+      updateFilamentPreview();
+      document.getElementById('modal-add-filament').classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    };
+    window.openEditFilamentModal = function(id) {
+      const f = filamentMap.get(id); if (!f) return;
+      document.getElementById('edit-filament-id').value = f.id;
+      document.getElementById('filament-modal-title').innerHTML = '<i class="fa-solid fa-pen-to-square text-amber-400"></i> Edit Filament';
+      document.getElementById('filament-submit-label').innerText = 'Save Changes';
+      document.getElementById('new-filament-name').value = f.name;
+      document.getElementById('new-filament-desc').value = f.description || '';
+      document.getElementById('new-filament-color').value = f.color;
+      document.getElementById('new-filament-surcharge').value = f.surcharge;
+      updateFilamentPreview();
+      document.getElementById('modal-add-filament').classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    };
+    window.closeAddFilamentModal = function() {
+      document.getElementById('modal-add-filament').classList.add('hidden');
+      document.body.style.overflow = '';
+    };
+    window.submitNewFilament = async function() {
+      const id = document.getElementById('edit-filament-id').value;
+      const name = document.getElementById('new-filament-name').value.trim();
+      const desc = document.getElementById('new-filament-desc').value.trim();
+      const color = document.getElementById('new-filament-color').value;
+      const surcharge = parseInt(document.getElementById('new-filament-surcharge').value) || 0;
+      if (!name) { showToast('Enter filament name.', 'error'); return; }
+      if (id) {
+        const f = filamentMap.get(id);
+        if (f) {
+          f.name = name; f.color = color; f.surcharge = surcharge; f.description = desc;
+          renderOwnerFilaments();
+          await saveFilamentToDb(f);
+          showToast('Updated: ' + name);
+        }
+      } else {
+        const nf = { id: 'fil-' + Date.now(), name, color, surcharge, description: desc, inStock: true, sortOrder: filaments.length };
+        filaments.push(nf); rebuildMaps(); renderOwnerFilaments();
+        await saveFilamentToDb(nf);
+        showToast('Added: ' + name);
+      }
+      closeAddFilamentModal();
+    };
+    window.toggleFilamentStock = async function(id) {
+      const f = filamentMap.get(id); if (!f) return;
+      f.inStock = !f.inStock; renderOwnerFilaments();
+      await saveFilamentToDb(f);
+      showToast('Stock updated: ' + f.name);
+    };
+    window.deleteFilament = async function(id) {
+      filaments = filaments.filter(f => f.id !== id);
+      filaments.forEach((f, i) => f.sortOrder = i);
+      rebuildMaps(); if (activeView === 'owner') renderOwnerFilaments();
+      await removeFilamentFromDb(id);
+      showToast('Filament removed.');
+    };
+
+    window.renderOwnerCatalog = function() {
+      const c = document.getElementById('owner-catalog-container'); if (!c) return;
+      c.innerHTML = catalogModels.map(m => {
+        const c2 = m.imageCrop || defaultCrop();
+        const img = m.imageUrl
+          ? '<div class="product-img-wrap" style="aspect-ratio:' + (c2.aspect || '4/3') + ';"><img src="' + escapeAttr(m.imageUrl) + '" style="object-position:' + (c2.x || 50) + '% ' + (c2.y || 50) + '%;transform:scale(' + ((c2.zoom || 100) / 100) + ');transform-origin:' + (c2.x || 50) + '% ' + (c2.y || 50) + '%;" /></div>'
+          : '<div class="w-full h-32 rounded-xl border border-slate-800 bg-slate-950 flex items-center justify-center"><i class="fa-solid ' + (m.icon || 'fa-cube') + ' text-3xl text-cyan-400/40"></i></div>';
+        const oc = (m.options || []).length;
+        const starBtn = '<button onclick="toggleNewArrival(\'' + m.id + '\')" class="absolute top-3 right-3 z-10 w-8 h-8 rounded-xl flex items-center justify-center transition ' + (m.newArrival ? 'bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/40' : 'bg-slate-950/80 text-slate-400 hover:text-amber-400 border border-slate-700') + '" title="Toggle New Arrival"><i class="fa-solid fa-star"></i></button>';
+        return '<div class="glass-card rounded-2xl border ' + (m.newArrival ? 'border-amber-500/40' : 'border-slate-800') + ' flex flex-col justify-between space-y-3 overflow-hidden relative">'
+          + '<div class="relative">' + img + starBtn + '</div>'
+          + '<div class="p-4 space-y-1">'
+          + '<h4 class="text-xs font-bold text-white flex items-center gap-2"><i class="fa-solid ' + (m.icon || 'fa-cube') + ' text-cyan-400"></i> ' + escapeHtml(m.title) + '</h4>'
+          + '<span class="text-[10px] font-mono text-cyan-400 block">' + escapeHtml(m.category) + ' | ฿' + m.price + '</span>'
+          + '<p class="text-[11px] text-slate-400 line-clamp-2">' + escapeHtml(m.desc || '') + '</p>'
+          + (oc > 0 ? '<span class="inline-block text-[9px] font-mono bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 px-2 py-0.5 rounded-lg mt-1"><i class="fa-solid fa-sliders"></i> ' + oc + ' option' + (oc > 1 ? 's' : '') + '</span>' : '')
+          + (m.newArrival ? '<span class="inline-block text-[9px] font-mono bg-amber-500/15 border border-amber-500/40 text-amber-300 px-2 py-0.5 rounded-lg mt-1 ml-1"><i class="fa-solid fa-star"></i> NEW ARRIVAL</span>' : '')
+          + '</div>'
+          + '<div class="flex items-center justify-between px-4 pb-4 pt-2 border-t border-slate-800 text-xs font-mono">'
+          + '<button onclick="openEditCatalogModel(\'' + m.id + '\')" class="text-slate-400 hover:text-cyan-400 transition flex items-center gap-1"><i class="fa-solid fa-pen-to-square"></i> Edit</button>'
+          + '<button onclick="deleteCatalogModel(\'' + m.id + '\')" class="text-slate-500 hover:text-rose-400 transition flex items-center gap-1"><i class="fa-solid fa-trash-can"></i> Remove</button>'
+          + '</div></div>';
+      }).join('');
+    };
+
+    window.toggleNewArrival = async function(id) {
+      const m = catalogMap.get(id); if (!m) return;
+      m.newArrival = !m.newArrival;
+      renderOwnerCatalog(); renderShopGrid();
+      await saveModelToDb(m);
+      showToast(m.newArrival ? 'Marked as New Arrival: ' + m.title : 'Removed from New Arrivals: ' + m.title);
+    };
+
+    let currentModelImageData = '';
+    let currentCrop = defaultCrop();
+    let cropDragging = false, cropStartX = 0, cropStartY = 0, cropStartPosX = 50, cropStartPosY = 50;
+
+    function applyCropToImage() {
+      const img = document.getElementById('crop-image');
+      const zoom = document.getElementById('crop-zoom');
+      const zl = document.getElementById('crop-zoom-label');
+      const aspectSel = document.getElementById('crop-aspect');
+      const canvas = document.getElementById('crop-canvas');
+      const pImg = document.getElementById('crop-preview-img');
+      const pEmpty = document.getElementById('crop-preview-empty');
+      const preview = document.getElementById('crop-preview');
+      if (!img || img.style.display === 'none' || !currentModelImageData) return;
+      const z = (currentCrop.zoom || 100) / 100;
+      img.style.objectPosition = currentCrop.x + '% ' + currentCrop.y + '%';
+      img.style.transform = 'scale(' + z + ')';
+      img.style.transformOrigin = currentCrop.x + '% ' + currentCrop.y + '%';
+      if (zoom) zoom.value = currentCrop.zoom || 100;
+      if (zl) zl.innerText = (currentCrop.zoom || 100) + '%';
+      if (aspectSel) aspectSel.value = currentCrop.aspect || '4/3';
+      if (canvas) canvas.style.aspectRatio = currentCrop.aspect || '4/3';
+      if (preview) preview.style.aspectRatio = currentCrop.aspect || '4/3';
+      if (pImg && currentModelImageData) {
+        pImg.src = currentModelImageData;
+        pImg.style.display = 'block';
+        pImg.style.objectPosition = currentCrop.x + '% ' + currentCrop.y + '%';
+        pImg.style.transform = 'scale(' + z + ')';
+        pImg.style.transformOrigin = currentCrop.x + '% ' + currentCrop.y + '%';
+        if (pEmpty) pEmpty.style.display = 'none';
+      }
+    }
+
+    window.handleModelImageUpload = function(event) {
+      const file = event.target.files && event.target.files[0]; if (!file) return;
+      if (file.size > 3 * 1024 * 1024) { showToast('Image too large. Use under 3MB.', 'error'); event.target.value = ''; return; }
+      const r = new FileReader();
+      r.onload = function(e) {
+        currentModelImageData = e.target.result;
+        document.getElementById('new-model-image-data').value = currentModelImageData;
+        const img = document.getElementById('crop-image');
+        img.src = currentModelImageData; img.style.display = 'block';
+        document.getElementById('crop-empty').style.display = 'none';
+        currentCrop = defaultCrop();
+        applyCropToImage();
+      };
+      r.readAsDataURL(file);
+    };
+    window.clearModelImage = function() {
+      currentModelImageData = ''; currentCrop = defaultCrop();
+      document.getElementById('new-model-image-data').value = '';
+      document.getElementById('new-model-image-file').value = '';
+      const img = document.getElementById('crop-image'); img.src = ''; img.style.display = 'none';
+      document.getElementById('crop-empty').style.display = 'flex';
+      document.getElementById('crop-preview-img').style.display = 'none';
+      document.getElementById('crop-preview-empty').style.display = 'flex';
+    };
+    window.resetCrop = function() { currentCrop = defaultCrop(); applyCropToImage(); };
+    window.onCropZoom = function(v) { currentCrop.zoom = Number(v); applyCropToImage(); };
+    window.onCropAspectChange = function(v) { currentCrop.aspect = v; applyCropToImage(); };
+
+    (function setupCropDrag() {
+      const canvas = document.getElementById('crop-canvas');
+      if (!canvas) return;
+      canvas.addEventListener('mousedown', startDrag);
+      canvas.addEventListener('touchstart', startDrag, { passive: true });
+      function startDrag(e) {
+        if (!currentModelImageData) return;
+        cropDragging = true; canvas.classList.add('dragging');
+        const p = 'touches' in e ? e.touches[0] : e;
+        cropStartX = p.clientX; cropStartY = p.clientY;
+        cropStartPosX = currentCrop.x; cropStartPosY = currentCrop.y;
+      }
+      function onMove(e) {
+        if (!cropDragging) return;
+        const p = 'touches' in e ? e.touches[0] : e;
+        const rect = canvas.getBoundingClientRect();
+        const dx = (p.clientX - cropStartX) / rect.width * 100;
+        const dy = (p.clientY - cropStartY) / rect.height * 100;
+        currentCrop.x = Math.max(0, Math.min(100, cropStartPosX - dx));
+        currentCrop.y = Math.max(0, Math.min(100, cropStartPosY - dy));
+        applyCropToImage();
+        if (e.cancelable) e.preventDefault();
+      }
+      function endDrag() { cropDragging = false; canvas.classList.remove('dragging'); }
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('touchmove', onMove, { passive: false });
+      document.addEventListener('mouseup', endDrag);
+      document.addEventListener('touchend', endDrag);
+    })();
+
+    let editingOptions = [];
+    window.addOptionGroup = function() {
+      editingOptions.push({ id: 'g' + Date.now() + Math.random().toString(36).substring(2, 5), name: '', choices: [{ value: '', label: '', priceDelta: 0 }] });
+      renderOptionsBuilder();
+    };
+    window.removeOptionGroup = function(id) { editingOptions = editingOptions.filter(g => g.id !== id); renderOptionsBuilder(); };
+    window.updateOptionGroupName = function(id, name) { const g = editingOptions.find(x => x.id === id); if (g) g.name = name; };
+    window.addOptionChoice = function(id) { const g = editingOptions.find(x => x.id === id); if (!g) return; g.choices.push({ value: '', label: '', priceDelta: 0 }); renderOptionsBuilder(); };
+    window.removeOptionChoice = function(id, i) { const g = editingOptions.find(x => x.id === id); if (!g) return; g.choices.splice(i, 1); if (g.choices.length === 0) g.choices.push({ value: '', label: '', priceDelta: 0 }); renderOptionsBuilder(); };
+    window.updateOptionChoice = function(id, i, f, v) {
+      const g = editingOptions.find(x => x.id === id); if (!g || !g.choices[i]) return;
+      if (f === 'priceDelta') g.choices[i][f] = Number(v) || 0;
+      else { g.choices[i][f] = v; if (f === 'label' && !g.choices[i].value) g.choices[i].value = v; }
+    };
+    function renderOptionsBuilder() {
+      const c = document.getElementById('options-builder'); if (!c) return;
+      if (editingOptions.length === 0) { c.innerHTML = '<p class="text-[10px] text-slate-500 font-mono text-center py-2 border border-dashed border-slate-800 rounded-xl">No options defined. Click "Add Group" to create one.</p>'; return; }
+      c.innerHTML = editingOptions.map(g => '<div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-3 space-y-2">'
+        + '<div class="flex items-center gap-2">'
+        + '<input type="text" value="' + escapeAttr(g.name) + '" oninput="updateOptionGroupName(\'' + g.id + '\', this.value)" placeholder="Group name (e.g. Battery Holder)" class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-cyan-500" />'
+        + '<button type="button" onclick="removeOptionGroup(\'' + g.id + '\')" class="p-1.5 text-rose-400 hover:text-rose-300 transition"><i class="fa-solid fa-trash-can"></i></button>'
+        + '</div><div class="space-y-1.5 pl-2">'
+        + g.choices.map((ch, i) => '<div class="flex items-center gap-1.5">'
+          + '<input type="text" value="' + escapeAttr(ch.label) + '" oninput="updateOptionChoice(\'' + g.id + '\', ' + i + ', \'label\', this.value)" placeholder="Choice (e.g. AAA)" class="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-[11px] text-white focus:outline-none focus:border-cyan-500" />'
+          + '<input type="number" value="' + (ch.priceDelta || 0) + '" oninput="updateOptionChoice(\'' + g.id + '\', ' + i + ', \'priceDelta\', this.value)" placeholder="+฿" class="w-16 bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-[11px] text-cyan-300 focus:outline-none focus:border-cyan-500" />'
+          + '<button type="button" onclick="removeOptionChoice(\'' + g.id + '\', ' + i + ')" class="p-1 text-slate-500 hover:text-rose-400 transition"><i class="fa-solid fa-xmark text-xs"></i></button>'
+          + '</div>').join('')
+        + '<button type="button" onclick="addOptionChoice(\'' + g.id + '\')" class="text-[10px] font-mono text-cyan-400 hover:text-cyan-300 transition mt-1"><i class="fa-solid fa-plus"></i> Add choice</button>'
+        + '</div></div>').join('');
+    }
+
+    window.openAddModelModal = function() {
+      document.getElementById('edit-model-id').value = '';
+      document.getElementById('model-modal-title').innerHTML = '<i class="fa-solid fa-plus text-cyan-400"></i> Add New 3D Print Model';
+      document.getElementById('model-submit-btn').innerText = 'Add Model to Catalog';
+      document.getElementById('new-model-title').value = '';
+      document.getElementById('new-model-category').value = 'Articulated';
+      document.getElementById('new-model-icon').value = 'fa-dragon';
+      document.getElementById('new-model-price').value = '150';
+      document.getElementById('new-model-desc').value = '';
+      document.getElementById('new-model-new-arrival').checked = false;
+      currentModelImageData = ''; currentCrop = defaultCrop();
+      document.getElementById('new-model-image-data').value = '';
+      document.getElementById('new-model-image-file').value = '';
+      document.getElementById('crop-image').style.display = 'none';
+      document.getElementById('crop-empty').style.display = 'flex';
+      document.getElementById('crop-preview-img').style.display = 'none';
+      document.getElementById('crop-preview-empty').style.display = 'flex';
+      document.getElementById('crop-zoom').value = 100;
+      document.getElementById('crop-zoom-label').innerText = '100%';
+      document.getElementById('crop-aspect').value = '4/3';
+      editingOptions = [];
+      renderOptionsBuilder();
+      document.getElementById('modal-add-model').classList.remove('hidden');
+    };
+    window.openEditCatalogModel = function(id) {
+      const m = catalogMap.get(id); if (!m) return;
+      document.getElementById('edit-model-id').value = m.id;
+      document.getElementById('model-modal-title').innerHTML = '<i class="fa-solid fa-pen-to-square text-cyan-400"></i> Edit 3D Print Model';
+      document.getElementById('model-submit-btn').innerText = 'Save Changes';
+      document.getElementById('new-model-title').value = m.title;
+      document.getElementById('new-model-category').value = m.category || 'Articulated';
+      document.getElementById('new-model-icon').value = m.icon || 'fa-cube';
+      document.getElementById('new-model-price').value = m.price;
+      document.getElementById('new-model-desc').value = m.desc;
+      document.getElementById('new-model-new-arrival').checked = !!m.newArrival;
+      currentModelImageData = m.imageUrl || '';
+      currentCrop = m.imageCrop ? JSON.parse(JSON.stringify(m.imageCrop)) : defaultCrop();
+      document.getElementById('new-model-image-data').value = currentModelImageData;
+      document.getElementById('new-model-image-file').value = '';
+      const img = document.getElementById('crop-image');
+      if (currentModelImageData) { img.src = currentModelImageData; img.style.display = 'block'; document.getElementById('crop-empty').style.display = 'none'; }
+      else { img.src = ''; img.style.display = 'none'; document.getElementById('crop-empty').style.display = 'flex'; }
+      applyCropToImage();
+      editingOptions = JSON.parse(JSON.stringify(m.options || []));
+      renderOptionsBuilder();
+      document.getElementById('modal-add-model').classList.remove('hidden');
+    };
+    window.closeAddModelModal = function() {
+      document.getElementById('modal-add-model').classList.add('hidden');
+      currentModelImageData = ''; editingOptions = [];
+    };
+    window.submitNewCatalogModel = async function() {
+      const id = document.getElementById('edit-model-id').value;
+      const title = document.getElementById('new-model-title').value.trim();
+      const category = document.getElementById('new-model-category').value;
+      const icon = document.getElementById('new-model-icon').value;
+      const price = parseInt(document.getElementById('new-model-price').value) || 150;
+      const desc = document.getElementById('new-model-desc').value.trim() || 'Custom 3D printed model.';
+      const newArrival = document.getElementById('new-model-new-arrival').checked;
+      if (!title) { showToast('Enter a model title.', 'error'); return; }
+      const cleanOpts = editingOptions.map(g => ({
+        id: g.id, name: (g.name || '').trim(),
+        choices: g.choices.map(c => ({ value: (c.value || c.label || '').trim(), label: (c.label || c.value || '').trim(), priceDelta: Number(c.priceDelta) || 0 })).filter(c => c.value !== '')
+      })).filter(g => g.name !== '' && g.choices.length > 0);
+      if (id) {
+        const m = catalogMap.get(id);
+        if (m) {
+          m.title = title; m.category = category; m.icon = icon;
+          m.price = price; m.desc = desc;
+          m.imageUrl = currentModelImageData || '';
+          m.imageCrop = currentModelImageData ? currentCrop : defaultCrop();
+          m.options = cleanOpts;
+          m.newArrival = newArrival;
+          renderShopGrid(); renderOwnerCatalog();
+          await saveModelToDb(m);
+          showToast('Updated: ' + title);
+        }
+      } else {
+        const nm = { id: 'mod-' + Date.now(), title, category, icon, price, desc, imageUrl: currentModelImageData || '', imageCrop: currentModelImageData ? currentCrop : defaultCrop(), options: cleanOpts, newArrival };
+        catalogModels.unshift(nm); rebuildMaps(); renderShopGrid();
+        if (activeView === 'owner') renderOwnerCatalog();
+        await saveModelToDb(nm);
+        showToast('Added: ' + title);
+      }
+      closeAddModelModal();
+    };
+    window.deleteCatalogModel = async function(id) {
+      catalogModels = catalogModels.filter(m => m.id !== id);
+      rebuildMaps(); renderShopGrid();
+      if (activeView === 'owner') renderOwnerCatalog();
+      await removeModelFromDb(id);
+      showToast('Model removed.');
+    };
+
+    window.debounceRenderOwnerPortalOrders = function() {
+      if (ownerSearchDebounceTimer) clearTimeout(ownerSearchDebounceTimer);
+      ownerSearchDebounceTimer = setTimeout(() => renderOwnerPortalOrders(), 150);
+    };
+    window.renderOwnerPortalOrders = function() {
+      const tb = document.getElementById('owner-orders-table-body'); if (!tb) return;
+      const s = (document.getElementById('owner-search-input') || {}).value || '';
+      const search = s.toLowerCase();
+      const f = orders.filter(o => o.trackingCode.toLowerCase().includes(search) || (o.customerName || '').toLowerCase().includes(search) || (o.modelTitle || '').toLowerCase().includes(search));
+      if (f.length === 0) { tb.innerHTML = '<tr><td colspan="5" class="p-6 text-center text-slate-500">No customer orders found.</td></tr>'; return; }
+      const sn = ['Received', 'Printing', 'Packaged', 'Ready for Pickup'];
+      tb.innerHTML = f.map(o => {
+        const st = Math.max(0, Math.min(3, o.stage));
+        const items = o.items || [];
+        let itemsHtml = '';
+        if (items.length > 0) {
+          itemsHtml = '<table class="order-items-table">'
+            + '<thead><tr><th>Item</th><th>Filament</th><th>Scale</th><th>Options</th><th class="text-right">Price</th></tr></thead>'
+            + '<tbody>'
+            + items.map(it => {
+                const optStr = (it.options && Object.keys(it.options).length > 0)
+                  ? Object.keys(it.options).map(k => escapeHtml(k) + '=' + escapeHtml(it.options[k])).join(', ')
+                  : '—';
+                return '<tr>'
+                  + '<td class="text-white font-bold"><i class="fa-solid ' + (it.icon || 'fa-cube') + ' text-cyan-400 mr-1"></i> ' + escapeHtml(it.title) + '</td>'
+                  + '<td><span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full" style="background:' + (it.filamentColor || '#64748b') + '"></span> ' + escapeHtml(it.filamentName || '') + '</span></td>'
+                  + '<td class="text-cyan-300">' + (it.scale || 100) + '%</td>'
+                  + '<td class="text-slate-400">' + optStr + '</td>'
+                  + '<td class="text-right text-emerald-400">฿' + (it.unitPrice || 0) + '</td>'
+                  + '</tr>';
+              }).join('')
+            + '</tbody></table>';
+        } else {
+          const so = o.selectedOptions || {};
+          const optHtml = Object.keys(so).length > 0
+            ? Object.keys(so).map(k => '<span class="inline-block bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-[10px] px-2 py-0.5 rounded-md mr-1 mb-1">' + escapeHtml(k) + ': <strong class="text-white">' + escapeHtml(so[k]) + '</strong></span>').join('')
+            : '<span class="text-slate-600 italic">None</span>';
+          itemsHtml = '<div class="text-[10px] text-slate-500 mb-1">' + escapeHtml(o.specs) + '</div>' + optHtml;
+        }
+        const total = items.reduce((s, it) => s + (it.unitPrice || 0), 0);
+        const totalHtml = items.length > 0 ? '<div class="text-[10px] text-emerald-400 font-bold mt-1">Total: ฿' + total + ' · ' + items.length + ' piece' + (items.length > 1 ? 's' : '') + '</div>' : '';
+        const optionsHtml = sn.map((name, i) =>
+          '<option value="' + i + '"' + (i === st ? ' selected' : '') + '>' + (i + 1) + '. ' + name + '</option>'
+        ).join('');
+        return '<tr class="hover:bg-slate-900/60 transition">'
+          + '<td class="p-3 font-bold text-cyan-400 align-top">' + o.trackingCode + '</td>'
+          + '<td class="p-3 align-top"><span class="text-white block font-bold">' + escapeHtml(o.customerName) + '</span></td>'
+          + '<td class="p-3 text-slate-200">' + itemsHtml + totalHtml + '</td>'
+          + '<td class="p-3 align-top"><select class="stage-select s' + st + '" onchange="changeOrderStage(\'' + o.trackingCode + '\', this.value)">' + optionsHtml + '</select></td>'
+          + '<td class="p-3 text-right align-top">'
+          + '<button onclick="deleteOrder(\'' + o.trackingCode + '\')" class="p-1.5 text-slate-500 hover:text-rose-400 transition" title="Delete order"><i class="fa-solid fa-trash-can"></i></button>'
+          + '</td></tr>';
+      }).join('');
+    };
+    window.changeOrderStage = async function(code, newStage) {
+      const o = orderMap.get(code); if (!o) return;
+      const st = Math.max(0, Math.min(3, Number(newStage)));
+      if (st === o.stage) return;
+      const sn = ['Received', 'Printing in Progress', 'Inspected & Packaged', 'Ready for Pickup'];
+      o.stage = st;
+      o.logs.push('▶ Status changed by Owner to: ' + sn[st]);
+      renderOwnerPortalOrders(); renderOwnerPortal();
+      await saveOrderToDb(o);
+      showToast('Order ' + code + ' → ' + sn[st]);
+    };
+    window.deleteOrder = async function(code) {
+      orders = orders.filter(o => o.trackingCode !== code);
+      rebuildMaps();
+      if (activeView === 'owner') renderOwnerPortal();
+      await removeOrderFromDb(code);
+      showToast('Order ' + code + ' deleted.');
+    };
+
+    // ============================================================
+    // BOOT
+    // ============================================================
+    window.addEventListener('load', function() {
+      loadCart();
+      updateCartBadge();
+      // If firebase already loaded before this ran, start boot
+      if (window.__fb && window.__fb.ready) {
+        fbReady = true;
+        firebase = window.__fb;
+        initBackend();
+      }
+    });
+  </script>
+</body>
+</html>
